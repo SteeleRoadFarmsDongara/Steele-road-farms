@@ -155,6 +155,17 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <button class="big" onclick="signKid()">Join Rats Patch Kids Club</button><div id="kidDone"></div></div>
 </section>
 
+<!-- MESSAGES -->
+<section class="view" id="view-messages">
+  <div class="card"><h2>Messages — talk to Farmer Kev</h2>
+  <p class="small">Ask about a box, pickup, stock or a gift card. Your message is saved here and shows in Farmer Kev's Farm Hub on this device. For the fastest reply, also send it on Messenger — tap Copy message below after you send.</p>
+  <label>Your name</label><input id="msgName" placeholder="Your name">
+  <label>Phone (optional, so Kev can reply)</label><input id="msgPhone" placeholder="04xx xxx xxx" inputmode="tel">
+  <label>Your message</label><textarea id="msgText" rows="3" placeholder="Hi Kev, …"></textarea>
+  <button class="big" onclick="sendMessage()">Send message</button><div id="msgDone"></div></div>
+  <div class="card"><h2>Your messages here</h2><div id="myMessages"></div></div>
+</section>
+
 <!-- HUB -->
 <section class="view" id="view-hub">
   <div class="card" id="hubGate"><h2>Farm Hub — operator only</h2><p class="small">This is Farmer Kev's control side. Customers: please use the Shop tab.</p>
@@ -167,6 +178,10 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
     <div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Customer</th><th>Box / items</th><th>Total</th><th>Pay</th><th></th></tr></thead><tbody id="hubRows"></tbody></table></div></div>
     <div class="card"><h2>Pack list — Mon 30 Nov Geraldton / Tue 1 Dec farm</h2><div id="packList"></div>
     <button class="big" onclick="window.print()">Print pack list</button></div>
+    <div class="card"><h2>Messages — from customers</h2>
+    <p class="small">Messages sent in the app show here on this device. Reply here — your reply shows to the customer on this device too. For a reply they will actually see on their phone, also send it on Messenger.</p>
+    <div id="hubMsgList"></div>
+    <p><button class="small" onclick="exportMessages()">Export messages (JSON)</button></p></div>
     <div class="card"><h2>Weekly reset &amp; past orders</h2>
     <p class="small">When the week's deliveries and pickups are done, close the week. That files all of this week's orders away, clears the pack list, and starts you fresh for next week. Gift cards and shop inventory are <b>not</b> cleared. Order numbers restart each week — past weeks are filed below.</p>
     <p style="margin-top:10px"><button class="big" onclick="closeWeek()">Close this week &amp; start fresh</button>
@@ -193,7 +208,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <button onclick="show('csa',this)">CSA &amp; Loyalty</button>
   <button onclick="show('kids',this)">Kids Club</button>
   <button onclick="show('hub',this)">Farm Hub</button>
-  <button onclick="show('shop',this)">Top ↑</button>
+  <button onclick="show('messages',this)">Messages <span id="msgBadge"></span></button>
 </div></nav>
 
 <script>
@@ -202,7 +217,10 @@ const DEFAULT_BOXES={small:{label:'Small',pickup:30,del:35},standard:{label:'Sta
 const DEFAULT_DONGARA=[['Potatoes',6,'kg'],['Carrots',5,'kg'],['Beetroot',6,'kg'],['Zucchini',8,'kg'],['Pumpkin',3.5,'kg'],['Sweet potato',9,'kg'],['Brown onions',5,'kg'],['Tomatoes',8,'kg'],['Broccoli',4.5,'each'],['Cauliflower',7.5,'each'],['Celery',5,'bunch'],['Garlic',35,'kg']];
 const DEFAULT_STOCK=['Beetroot','Brown onions','Carrot','Cayenne peppers','Celery (loose)','Cos lettuce','Garlic (purple, locally grown)','Green capsicum','Potatoes','Radish','Salad mix','Silverbeet / chard','Thai chillies','Tomatoes','Yellow squash','Zucchini (yellow, Lebanese, old-fashioned, mixed colours/varieties)'];
 const DEFAULT_INV={boxes:JSON.parse(JSON.stringify(DEFAULT_BOXES)),dongara:DEFAULT_DONGARA.map(p=>({name:p[0],price:p[1],unit:p[2],stock:true})),stock:DEFAULT_STOCK.slice(),zuc:{large3:2,small3:2.5,bag:5,crate12:15},giftDenoms:[25,50,100]};
-let INV;let giftcards=[];let giftApplied=null;let selectedGiftAmt=null;let archives=[];let archiveView=-1;
+let INV;let giftcards=[];let giftApplied=null;let selectedGiftAmt=null;let archives=[];let archiveView=-1;let messages=[];
+function loadMessages(){try{const s=localStorage.getItem('srf_messages_v1');if(s)messages=JSON.parse(s);}catch(e){messages=[];}}
+function saveMessages(){try{localStorage.setItem('srf_messages_v1',JSON.stringify(messages))}catch(e){}}
+function msgBadge(){const n=messages.filter(m=>!m.read).length;const el=document.getElementById('msgBadge');if(el)el.textContent=n?'('+n+')':'';}
 function loadArchives(){try{const s=localStorage.getItem('srf_archives_v1');if(s)archives=JSON.parse(s);}catch(e){archives=[];}}
 function saveArchives(){try{localStorage.setItem('srf_archives_v1',JSON.stringify(archives))}catch(e){}}
 function loadInv(){try{const s=localStorage.getItem('srf_inventory_v1');if(s){INV=JSON.parse(s);INV.boxes=INV.boxes||JSON.parse(JSON.stringify(DEFAULT_BOXES));INV.dongara=INV.dongara||DEFAULT_INV.dongara;INV.stock=INV.stock||DEFAULT_STOCK.slice();INV.zuc=INV.zuc||{large3:2,small3:2.5,bag:5,crate12:15};INV.giftDenoms=INV.giftDenoms||[25,50,100];return;}}catch(e){} INV=JSON.parse(JSON.stringify(DEFAULT_INV));}
@@ -274,6 +292,12 @@ function renderArchives(){const el=document.getElementById('archiveList');if(!el
 function viewArchive(i){archiveView=i;const a=archives[i];document.getElementById('archiveDetail').innerHTML='<div class="card" style="border-color:var(--gold)"><h2>'+a.label+'</h2><p class="small">Filed '+a.closed+' &bull; '+a.count+' orders &bull; Total '+money(a.total)+' &bull; Paid '+money(a.paid)+' &bull; Unpaid '+money(a.unpaid)+'</p><table><thead><tr><th>Order</th><th>Customer</th><th>Box / items</th><th>Total</th><th>Pay</th></tr></thead><tbody>'+a.orders.map(o=>'<tr><td>'+o.id+'<br><span class="small">'+o.date+'</span></td><td>'+o.name+'</td><td>'+o.box+'</td><td>'+money(o.total)+'</td><td>'+o.paid+'<br><span class="small">'+o.pay+'</span></td></tr>').join('')+'</tbody></table></div>';}
 function exportArchive(i){const a=archives[i];const csv='id,name,date,method,box,total,pay,paid,notes\n'+a.orders.map(o=>[o.id,'"'+o.name+'"',o.date,o.method,'"'+o.box+'"',o.total,o.pay,o.paid,'"'+(o.notes||'')+'"'].join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const el=document.createElement('a');el.href=URL.createObjectURL(blob);el.download='steele-road-farms-'+a.label.replace(/[^A-Za-z0-9]+/g,'-')+'.csv';el.click();}
 function exportAllArchives(){const blob=new Blob([JSON.stringify(archives,null,2)],{type:'application/json'});const el=document.createElement('a');el.href=URL.createObjectURL(blob);el.download='steele-road-farms-past-orders.json';el.click();}
+function sendMessage(){const name=document.getElementById('msgName').value.trim(),text=document.getElementById('msgText').value.trim();if(!name||!text){alert('Add your name and a message first.');return;}const m={id:'MSG-'+String(messages.length+1).padStart(3,'0'),name,phone:document.getElementById('msgPhone').value.trim(),text,date:'2026-11-24',read:false,replies:[]};messages.push(m);saveMessages();renderMessages();renderHubMessages();msgBadge();const copy='Steele Road Farms message from '+name+(m.phone?' ('+m.phone+')':'')+': '+text;document.getElementById('msgDone').innerHTML='<div class="card" style="border-color:var(--gold)"><h2>Message sent — thank you!</h2><p class="small">Kev will see it in the Farm Hub on this device. For a faster reply, copy it and send it on Messenger too:</p><pre>'+copy.replace(/</g,'&lt;')+'</pre><button class="ghost" onclick="copyText(document.querySelector(\'#msgDone pre\').textContent)">Copy message</button></div>';document.getElementById('msgText').value='';}
+function renderMessages(){const el=document.getElementById('myMessages');if(!el)return;el.innerHTML=messages.length?messages.map(m=>'<div class="prow" style="display:block"><span><b>'+m.name+'</b> <span class="small">'+m.date+'</span><br>'+m.text.replace(/</g,'&lt;')+'</span>'+(m.replies.length?m.replies.map(r=>'<br><span class="small">— Farmer Kev: '+r.text.replace(/</g,'&lt;')+'</span>').join(''):'<br><span class="small">Waiting for Kev…</span>')+'</div>').join(''):'<p class="small">No messages sent from this device yet.</p>';}
+function renderHubMessages(){const el=document.getElementById('hubMsgList');if(!el)return;el.innerHTML=messages.length?messages.slice().reverse().map(m=>'<div class="card" style="border-color:'+(m.read?'#333':'var(--gold)')+'"><p><b>'+m.name+'</b> '+(m.phone?'('+m.phone+') ':'')+'<span class="small">'+m.date+' &bull; '+m.id+' &bull; '+(m.read?'read':'NEW')+'</span></p><p>'+m.text.replace(/</g,'&lt;')+'</p>'+m.replies.map(r=>'<p class="small">— You: '+r.text.replace(/</g,'&lt;')+'</p>').join('')+'<label>Reply</label><textarea rows="2" id="reply-'+m.id+'" placeholder="Reply to '+m.name.replace(/"/g,'&quot;')+'…"></textarea><p><button class="small" onclick="replyMessage(\''+m.id+'\')">Send reply</button> <button class="small" onclick="markMsgRead(\''+m.id+'\')">Mark read</button></p></div>').join(''):'<p class="small">No customer messages yet on this device.</p>';msgBadge();}
+function replyMessage(id){const m=messages.find(x=>x.id===id);const t=document.getElementById('reply-'+id);if(!m||!t||!t.value.trim()){alert('Write a reply first.');return;}m.replies.push({from:'Kev',text:t.value.trim(),date:'2026-11-24'});m.read=true;saveMessages();renderMessages();renderHubMessages();}
+function markMsgRead(id){const m=messages.find(x=>x.id===id);if(m){m.read=true;saveMessages();renderHubMessages();}}
+function exportMessages(){const blob=new Blob([JSON.stringify(messages,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-messages.json';a.click();}
 function applyGift(){const code=document.getElementById('giftCode').value.trim().toUpperCase();const g=giftcards.find(x=>x.code===code);const out=document.getElementById('giftOut');if(!g){giftApplied=null;out.innerHTML='<p class="small">That gift card code was not found on this device.</p>';calc();return;}if(g.status==='redeemed'||g.remaining<=0){giftApplied=null;out.innerHTML='<p class="small">That gift card has already been fully used.</p>';calc();return;}giftApplied=g;out.innerHTML='<p class="small">Gift card '+g.code+' — '+money(g.remaining)+' available. It will come off your total.</p>';calc();}
 function buyGift(){const amt=parseFloat(document.getElementById('giftAmount').value)||selectedGiftAmt;const buyer=document.getElementById('giftBuyer').value.trim();const to=document.getElementById('giftTo').value.trim();if(!amt||amt<5){alert('Pick an amount — at least $5.');return;}if(!buyer){alert('Add your name so Farmer Kev knows who bought it.');return;}const code='SRF-GIFT-'+String(Math.floor(1000+Math.random()*9000));const g={code,amount:+amt.toFixed(2),remaining:+amt.toFixed(2),buyer,to:to||'—',message:document.getElementById('giftMsg').value.trim(),date:'2026-11-24',status:'active',pay:document.getElementById('payMethod').value};giftcards.push(g);saveGift();renderHubGiftList();document.getElementById('giftDone').innerHTML='<div class="card" style="border-color:var(--gold)"><h2>Gift card bought — thank you!</h2><p>Code: <b>'+code+'</b><br>Amount: <b class="price">'+money(g.amount)+'</b><br>For: <b>'+(g.to||'—')+'</b></p><p class="small">Pay for it the same way as an order — PayID steeleroadfarmsdongara@gmail.com, bank transfer, PayPal or cash. Give the code to the recipient — they enter it at checkout and it comes off their total. It is saved on this device and shows in Farmer Kev\'s Farm Hub here too.</p><pre>'+code+' — Steele Road Farms gift card '+money(g.amount)+' from '+buyer+' to '+(g.to||'—')+(g.message?'. '+g.message:'')+'</pre><button class="ghost" onclick="copyText(\''+code+'\')">Copy code</button></div>';}
 function renderHubGiftList(){const el=document.getElementById('hubGiftList');if(!el)return;el.innerHTML=giftcards.length?giftcards.map(g=>'<div class="prow"><span>'+g.code+' — '+g.to+' (from '+g.buyer+')<br><span class="small">'+g.date+' &bull; '+g.pay+'</span></span><span>'+money(g.remaining)+' left of '+money(g.amount)+' — '+g.status+'</span></div>').join(''):'<p class="small">No gift cards sold yet on this device.</p>';}
@@ -284,7 +308,7 @@ function resetInventory(){if(!confirm('Reset all inventory, prices and gift card
 function unlockHub(){if(document.getElementById('hubPass').value===HUB_PASSCODE){document.getElementById('hubGate').style.display='none';document.getElementById('hubBody').style.display='block';renderHub();}else{alert('Wrong passcode — ask Farmer Kev.');}}
 function hubFilter(f){hubFilterVal=f;renderHub();}
 function renderHub(){
- renderInvEditor();renderHubGiftList();renderArchives();
+ renderInvEditor();renderHubGiftList();renderArchives();renderHubMessages();
  const tot=orders.reduce((a,o)=>a+o.total,0),paid=orders.filter(o=>o.paid==='paid').reduce((a,o)=>a+o.total,0),un=tot-paid;
  document.getElementById('hubTotals').innerHTML='<p>Total: <b class="price">'+money(tot)+'</b> &bull; Paid: <b>'+money(paid)+'</b> &bull; Unpaid: <b class="price">'+money(un)+'</b> across '+orders.filter(o=>o.paid==='unpaid').length+' orders &bull; '+orders.length+' orders in total</p>';
  const rows=orders.filter(o=>hubFilterVal==='all'||o.paid===hubFilterVal);
@@ -297,7 +321,7 @@ function markPaid(id){const o=orders.find(x=>x.id===id);if(o){o.paid='paid';save
 function exportOrders(){const blob=new Blob([JSON.stringify(orders,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.json';a.click();}
 function exportCSV(){const csv='id,name,date,method,box,total,pay,paid,notes\n'+orders.map(o=>[o.id,'"'+o.name+'"',o.date,o.method,'"'+o.box+'"',o.total,o.pay,o.paid,'"'+(o.notes||'')+'"'].join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.csv';a.click();}
 function resetSeed(){if(!confirm('Reset all orders back to the seeded 24? New shop orders will be lost.'))return;localStorage.removeItem('srf_orders_v1');load();renderHub();}
-load();loadInv();loadGift();loadArchives();
+load();loadInv();loadGift();loadArchives();loadMessages();renderMessages();msgBadge();
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.textContent='Install app';});
 function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}else{document.getElementById('installHelp').innerHTML='On your phone: Android — menu (⋮) → Add to Home screen / Install app.<br>iPhone — Share → Add to Home Screen. Then it sits on your home screen like an app.';}}
