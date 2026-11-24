@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Steele Road Farms">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>Steele Road Farms — Farm Hub, Locals &amp; Shop</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -65,8 +73,12 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <b>Fortnightly veggie boxes.</b> Orders close <b>Thu 26 Nov 2026</b>.<br>
   Geraldton delivery <b>Mon 30 Nov 2026, BCF car park, 4:30&ndash;5:30pm</b>.<br>
   Farm pickup <b>Tue 1 Dec 2026, morning</b> — Steele Road Farms, Bonniefield.<br>
-  Organic grown only — <b>not certified organic</b>. No door delivery.
+  <b>Organic and Local</b>. No door delivery.
 </div>
+<div class="card" id="installCard"><h2>Get the app on your phone</h2>
+<p class="small">Install Steele Road Farms on your home screen — it opens like an app, no app store needed.</p>
+<p><button class="big" id="installBtn" onclick="installApp()">Install app</button></p>
+<p class="small" id="installHelp">Android: tap Install above, or menu (⋮) → Add to Home screen / Install app.<br>iPhone: tap Share → Add to Home Screen.</p></div>
 
 <!-- SHOP -->
 <section class="view active" id="view-shop">
@@ -285,7 +297,11 @@ function markPaid(id){const o=orders.find(x=>x.id===id);if(o){o.paid='paid';save
 function exportOrders(){const blob=new Blob([JSON.stringify(orders,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.json';a.click();}
 function exportCSV(){const csv='id,name,date,method,box,total,pay,paid,notes\n'+orders.map(o=>[o.id,'"'+o.name+'"',o.date,o.method,'"'+o.box+'"',o.total,o.pay,o.paid,'"'+(o.notes||'')+'"'].join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.csv';a.click();}
 function resetSeed(){if(!confirm('Reset all orders back to the seeded 24? New shop orders will be lost.'))return;localStorage.removeItem('srf_orders_v1');load();renderHub();}
-load();loadInv();loadGift();loadArchives();renderBoxes();renderDongara();renderStock();renderZuc();renderGiftGrid();calc();
+load();loadInv();loadGift();loadArchives();
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.textContent='Install app';});
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}else{document.getElementById('installHelp').innerHTML='On your phone: Android — menu (⋮) → Add to Home screen / Install app.<br>iPhone — Share → Add to Home Screen. Then it sits on your home screen like an app.';}}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}renderBoxes();renderDongara();renderStock();renderZuc();renderGiftGrid();calc();
 const cs=document.getElementById('csaSize');if(cs){const b=INV.boxes;cs.options[0].text='Small — $'+b.small.pickup+' pickup / $'+b.small.del+' delivered';cs.options[1].text='Standard — $'+b.standard.pickup+' pickup / $'+b.standard.del+' delivered';cs.options[2].text='Large — $'+b.large.pickup+' pickup / $'+b.large.del+' delivered';}
 </script>
 </body>
