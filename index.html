@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Steele Road Farms — Farm Hub, Locals &amp; Shop</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--green:#63a446;--red:#e23b2e;--orange:#f26a1b;--gold:#f5b301;--cream:#fff8e7}
+html,body{background:#000;color:var(--cream);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{max-width:520px;margin:0 auto;padding:0 10px 90px;overflow-x:hidden}
+h1,h2,h3{line-height:1.2}
+.grad{background:linear-gradient(90deg,var(--red),var(--orange),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+header{text-align:center;padding:14px 4px 8px;border-bottom:2px solid var(--gold)}
+header .srf{font-size:44px;font-weight:900;letter-spacing:2px}
+header .sub{color:var(--green);font-weight:700;letter-spacing:3px;font-size:13px}
+header .tag{font-style:italic;color:#ddd;margin-top:4px;font-size:14px}
+.banner{background:#111;border:1px solid var(--green);border-radius:10px;padding:10px;margin:12px 0;font-size:14px;line-height:1.5}
+.banner b{color:var(--gold)}
+nav{position:fixed;left:0;right:0;bottom:0;background:#111;border-top:2px solid var(--gold);z-index:10}
+nav .grid{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav button{background:none;border:none;color:var(--cream);padding:10px 2px;font-size:11px;cursor:pointer;border-right:1px solid #222}
+nav button.active{color:var(--gold);font-weight:800}
+.view{display:none}.view.active{display:block}
+.card{background:#111;border:1px solid #333;border-radius:12px;padding:14px;margin:12px 0}
+.card h2{margin-bottom:8px}
+.price{color:var(--gold);font-weight:800}
+label{display:block;font-size:13px;margin:10px 0 4px;color:#ccc}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#000;color:#fff;font-size:16px}
+button.big{width:100%;padding:14px;border:none;border-radius:10px;font-size:17px;font-weight:800;cursor:pointer;background:linear-gradient(90deg,var(--red),var(--orange),var(--gold));color:#000;margin-top:12px}
+button.ghost{width:100%;padding:10px;border:1px solid var(--green);border-radius:10px;background:#000;color:var(--green);font-weight:700;margin-top:8px;cursor:pointer}
+button.small{padding:6px 10px;border-radius:8px;border:1px solid var(--green);background:#000;color:var(--green);cursor:pointer;font-size:13px}
+.boxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.boxopt{border:2px solid #444;border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;background:#000}
+.boxopt.sel{border-color:var(--gold);background:#221a00}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #222;font-size:14px}
+.prow input{width:70px;text-align:center;padding:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:6px 4px;border-bottom:1px solid #222;text-align:left;vertical-align:top}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:800}
+.unpaid{background:#5a1010;color:#ffb3b3}.paid{background:#123f1a;color:#9be3a8}
+.flag{color:var(--gold);font-size:12px}
+.small{font-size:12px;color:#aaa;line-height:1.5}
+.zuc{border:2px solid var(--gold);background:#221a00;text-align:center;font-size:18px;font-weight:800;padding:14px;border-radius:12px;margin:12px 0}
+.zuc span{color:var(--gold)}
+pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid #333;border-radius:8px;padding:10px;font-size:12px}
+@media print{nav{display:none}body{max-width:100%;color:#000;background:#fff}.card,header,.banner{border-color:#000;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="srf grad">SRF</div>
+  <div class="sub">STEELE ROAD FARMS &bull; EST-2025</div>
+  <div class="tag">It's sorta what we do around here.</div>
+</header>
+<div class="banner">
+  <b>Fortnightly veggie boxes.</b> Orders close <b>Thu 26 Nov 2026</b>.<br>
+  Geraldton delivery <b>Mon 30 Nov 2026, BCF car park, 4:30&ndash;5:30pm</b>.<br>
+  Farm pickup <b>Tue 1 Dec 2026, morning</b> — Steele Road Farms, Bonniefield.<br>
+  Organic grown only — <b>not certified organic</b>. No door delivery.
+</div>
+
+<!-- SHOP -->
+<section class="view active" id="view-shop">
+  <div class="card"><h2>Shop this week — veggie boxes</h2>
+  <p class="small">Pick a box. It's your box — same value, you choose what goes in it under the CSA rules. We pack what you say.</p>
+  <div class="boxgrid" id="boxgrid"></div>
+  <label><input type="checkbox" id="customBox" style="width:auto"> Custom box — I want to pick what's in it (same value)</label>
+  <div id="customPicks" style="display:none"><label>What do you want in your custom box?</label><textarea id="customText" rows="3" placeholder="e.g. extra potatoes, no beetroot, more tomatoes…"></textarea></div>
+  <label>Pickup or delivery?</label>
+  <select id="fulfil"><option value="pickup">Farm pickup — Tue 1 Dec, morning</option><option value="delivery">Geraldton delivery — Mon 30 Nov, BCF 4:30–5:30pm</option></select>
+  <p class="small" id="boxPriceLine"></p></div>
+
+  <div class="zuc">🥒 ZUCCHINI SPECIAL 🥒<br><span>Large 3 for $2 &bull; Small 3 for $2.50</span><br>Large bag — as much as you can carry — $5</div>
+
+  <div class="card"><h2>Dongara pick-your-own — weekly</h2>
+  <p class="small">Pick exactly what you want, pay by the kilo or per item. Orders close every Thursday. Separate weekly list from the box pack list.</p>
+  <div id="dongaraList"></div></div>
+
+  <div class="card"><h2>Your details</h2>
+  <label>Full name</label><input id="custName" placeholder="Your name">
+  <label>Phone</label><input id="custPhone" placeholder="04xx xxx xxx" inputmode="tel">
+  <label>Address (delivery only — leave blank for farm pickup)</label><input id="custAddr" placeholder="Street, suburb">
+  <label>Where are you from?</label><input id="custFrom" placeholder="e.g. Geraldton, Dongara, Bonniefield">
+  <label>Payment method</label>
+  <select id="payMethod"><option value="payid">PayID — steeleroadfarmsdongara@gmail.com</option><option value="bank_transfer">Bank transfer (BSB to be added by Farmer Kev)</option><option value="paypal">PayPal — copy-and-pay outside the shop</option><option value="cash">Cash</option></select>
+  <p class="small">PayID: <b>steeleroadfarmsdongara@gmail.com</b> <button class="small" onclick="copyText('steeleroadfarmsdongara@gmail.com')">Copy PayID</button><br>BSB / account: blank — Farmer Kev to add. PayPal is copy-and-pay outside the shop, not paid inside it.</p>
+  <label><input type="checkbox" id="loyaltyOpt" checked style="width:auto"> Give me a Tight Ass Loyalty Card automatically (Steele Dollars)</label>
+  <label>Notes / changes</label><textarea id="custNotes" rows="2"></textarea>
+  <h3 style="margin-top:12px">Total: <span class="price" id="totalLine">$0.00</span></h3>
+  <button class="big" onclick="placeOrder()">Place my order</button>
+  <div id="orderConfirm"></div></div>
+
+  <div class="card"><h2>Stock on hand — all organic</h2>
+  <p class="small">Beetroot, brown onions, carrot, cayenne peppers, celery (loose), cos lettuce, garlic (purple, locally grown), green capsicum, potatoes, radish, salad mix, silverbeet / chard, Thai chillies, tomatoes, yellow squash, zucchini (yellow, Lebanese, old-fashioned, mixed colours/varieties).</p></div>
+</section>
+
+<!-- CSA -->
+<section class="view" id="view-csa">
+  <div class="card"><h2>CSA &amp; one-off boxes</h2>
+  <p><b>Custom box:</b> with a CSA you can get a custom box. It does not have to be what Farmer Kev packs — you choose your own produce for a custom box for the same value as your CSA box size. It's your box, you're the boss, we pack what you say.</p>
+  <p style="margin-top:8px"><b>No-obligation:</b> you can pull out at any time. <b>No contract, no guaranteed spot.</b></p>
+  <p class="small" style="margin-top:8px">Draft contract for Farmer Kev to check before legal use. Signing here does not pull money from your bank — that needs a proper direct-debit provider / bank setup.</p>
+  <label>Full name</label><input id="csaName">
+  <label>Address</label><input id="csaAddr">
+  <label>Box size</label><select id="csaSize"><option>Small — $30 pickup / $35 delivered</option><option>Standard — $55 pickup / $60 delivered</option><option>Large — $100 pickup / $105 delivered</option></select>
+  <label>Type your full name as your digital signature</label><input id="csaSig" placeholder="Type full name to sign">
+  <button class="big" onclick="signCSA()">Sign CSA</button><div id="csaDone"></div></div>
+  <div class="card"><h2>Tight Ass Loyalty Club</h2><p>Every customer gets a Tight Ass Loyalty Card automatically, with a tick to opt out. Check your Steele Dollars with Farmer Kev. Your customer number is shown on your order confirmation (SRF-001…).</p>
+  <label>Your name (to look up your card)</label><input id="loyName"><button class="ghost" onclick="lookupLoyalty()">Check my card</button><div id="loyOut"></div></div>
+</section>
+
+<!-- KIDS -->
+<section class="view" id="view-kids">
+  <div class="card"><h2>Rats Patch Kids Club</h2><p>A kids club — digital and physical. Its own Kids Dollars, separate from Steele Dollars.</p>
+  <h3 style="margin-top:10px">Missions — earn Kids Dollars</h3>
+  <div class="prow"><span>🌱 Plant a seedling and water it for a week</span><b>5 Kids $</b></div>
+  <div class="prow"><span>🥕 Pick a veggie and help wash it</span><b>3 Kids $</b></div>
+  <div class="prow"><span>🐛 Find a friendly bug in the garden</span><b>2 Kids $</b></div>
+  <div class="prow"><span>🎨 Draw your favourite farm veggie</span><b>2 Kids $</b></div>
+  <div class="prow"><span>📦 Help pack a veggie box</span><b>5 Kids $</b></div>
+  <label>Kid's first name</label><input id="kidName"><label>Parent / guardian name</label><input id="kidParent">
+  <button class="big" onclick="signKid()">Join Rats Patch Kids Club</button><div id="kidDone"></div></div>
+</section>
+
+<!-- HUB -->
+<section class="view" id="view-hub">
+  <div class="card" id="hubGate"><h2>Farm Hub — operator only</h2><p class="small">This is Farmer Kev's control side. Customers: please use the Shop tab.</p>
+  <label>Operator passcode</label><input id="hubPass" type="password" inputmode="numeric" placeholder="Enter passcode">
+  <button class="big" onclick="unlockHub()">Open Farm Hub</button>
+  <p class="small">Default passcode is <b>steele</b> — Farmer Kev, change HUB_PASSCODE in the app code to your own. This is a simple on-page gate on a public static page, not bank-grade security — do not store customer phone numbers or addresses here.</p></div>
+  <div id="hubBody" style="display:none">
+    <div class="card"><h2>Farm Hub — orders</h2><div id="hubTotals"></div>
+    <p style="margin:10px 0"><button class="small" onclick="hubFilter('all')">All</button> <button class="small" onclick="hubFilter('unpaid')">Unpaid</button> <button class="small" onclick="hubFilter('paid')">Paid</button> <button class="small" onclick="exportOrders()">Export JSON</button> <button class="small" onclick="exportCSV()">Export CSV</button></p>
+    <div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Customer</th><th>Box / items</th><th>Total</th><th>Pay</th><th></th></tr></thead><tbody id="hubRows"></tbody></table></div></div>
+    <div class="card"><h2>Pack list — Mon 30 Nov Geraldton / Tue 1 Dec farm</h2><div id="packList"></div>
+    <button class="big" onclick="window.print()">Print pack list</button></div>
+    <div class="card"><h2>Unconfirmed — check before changing totals</h2><p class="small">Miranda Wall — two $60 Standard entries 9 Nov, likely duplicate. Toni-Jane Burton — note says she ordered a $100 box and wants to add a $60 box; $100 box missing. Kevin Wenzel — $1.50 produce-only 30 Nov, looks like a test. Kotie van Eck — $60 + $35 on 16 Nov, likely both legitimate.</p>
+    <button class="ghost" onclick="resetSeed()">Reset orders to the seeded 24</button></div>
+  </div>
+</section>
+
+<nav><div class="grid">
+  <button class="active" onclick="show('shop',this)">Shop</button>
+  <button onclick="show('csa',this)">CSA &amp; Loyalty</button>
+  <button onclick="show('kids',this)">Kids Club</button>
+  <button onclick="show('hub',this)">Farm Hub</button>
+  <button onclick="show('shop',this)">Top ↑</button>
+</div></nav>
+
+<script>
+const HUB_PASSCODE='steele';
+const BOXES={small:{label:'Small',pickup:30,del:35},standard:{label:'Standard',pickup:55,del:60},large:{label:'Large',pickup:100,del:105}};
+const DONGARA=[['Potatoes',6,'kg'],['Carrots',5,'kg'],['Beetroot',6,'kg'],['Zucchini',8,'kg'],['Pumpkin',3.5,'kg'],['Sweet potato',9,'kg'],['Brown onions',5,'kg'],['Tomatoes',8,'kg'],['Broccoli',4.5,'each'],['Cauliflower',7.5,'each'],['Celery',5,'bunch'],['Garlic',35,'kg']];
+const SEED=[
+['SRF-001','Emily Thompson','2026-11-02','delivery','Large',105,'payid','paid',''],
+['SRF-002','Toni-Jane Burton','2026-11-02','delivery','Large',105,'bank_transfer','paid',''],
+['SRF-003','Kimmy Vogel','2026-11-06','delivery','Large',105,'payid','unpaid',''],
+['SRF-004','Rhiannon Hodder','2026-11-06','delivery','Large',105,'payid','unpaid',''],
+['SRF-005','Analisha Walsh','2026-11-09','delivery','Large',105,'bank_transfer','unpaid',''],
+['SRF-006','Aneata Friend','2026-11-09','delivery','Large',105,'bank_transfer','unpaid',''],
+['SRF-007','Chris n Mickey Evans','2026-11-09','delivery','Standard',60,'payid','unpaid',''],
+['SRF-008',"Kathryn O'Brien",'2026-11-09','delivery','Small',35,'paypal','unpaid',''],
+['SRF-009','Louise Cole','2026-11-09','delivery','Standard',60,'bank_transfer','unpaid',''],
+['SRF-010','Maddy Brown','2026-11-09','delivery','Standard',60,'bank_transfer','unpaid',''],
+['SRF-011','Miranda Wall','2026-11-09','delivery','Standard',60,'paypal','unpaid','Possible duplicate — second $60 Standard same day'],
+['SRF-012','Miranda Wall','2026-11-09','delivery','Standard',60,'bank_transfer','unpaid','Possible duplicate — second $60 Standard same day'],
+['SRF-013','Rebecca Topham','2026-11-09','delivery','Standard',60,'bank_transfer','unpaid',''],
+['SRF-014','Vanessa','2026-11-09','pickup','Large',100,'bank_transfer','paid',''],
+['SRF-015','Chris n Mickey Evans','2026-11-16','delivery','Small',35,'bank_transfer','unpaid',''],
+['SRF-016','Kathleen Gellatly','2026-11-16','delivery','Small',35,'bank_transfer','unpaid','Waitlist — No celery please'],
+['SRF-017','Kotie van Eck','2026-11-16','delivery','Standard',60,'bank_transfer','unpaid','Likely both legitimate'],
+['SRF-018','Kotie van Eck','2026-11-16','delivery','Small',35,'paypal','unpaid','Likely both legitimate'],
+['SRF-019','Marita Plozza','2026-11-16','delivery','Standard',60,'bank_transfer','unpaid','No beetroot — owes for 2 jars honey'],
+['SRF-020','Mickey n Chris Evans','2026-11-16','pickup','Small',30,'paypal','unpaid',''],
+['SRF-021','Nikki Upton','2026-11-16','pickup','Standard',55,'payid','unpaid',''],
+['SRF-022','Sam Staley','2026-11-16','pickup','Standard',55,'cash','unpaid',''],
+['SRF-023','Toni-Jane Burton','2026-11-16','delivery','Standard',60,'paypal','unpaid','$100 box missing — note says ordered $100 + wants to add $60'],
+['SRF-024','Kevin Wenzel','2026-11-30','pickup','Produce only',1.50,'paypal','unpaid','Looks like a test — potatoes 0.25kg']];
+let orders,selectedBox='standard',hubFilterVal='all';
+function load(){try{const s=localStorage.getItem('srf_orders_v1');if(s){orders=JSON.parse(s);return}}catch(e){} orders=SEED.map(r=>({id:r[0],name:r[1],date:r[2],method:r[3],box:r[4],total:r[5],pay:r[6],paid:r[7],notes:r[8],source:'seed'}));save();}
+function save(){try{localStorage.setItem('srf_orders_v1',JSON.stringify(orders))}catch(e){}}
+function money(n){return '$'+Number(n).toFixed(2)}
+function show(v,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo(0,0);}
+function copyText(t){if(navigator.clipboard)navigator.clipboard.writeText(t);alert('Copied: '+t);}
+function renderBoxes(){const g=document.getElementById('boxgrid');g.innerHTML='';for(const k in BOXES){const b=BOXES[k];const d=document.createElement('div');d.className='boxopt'+(selectedBox===k?' sel':'');d.innerHTML='<b>'+b.label+'</b><br><span class="price">$'+b.pickup+' pickup<br>$'+b.del+' delivered</span>';d.onclick=()=>{selectedBox=k;renderBoxes();calc();};g.appendChild(d);}}
+function renderDongara(){const el=document.getElementById('dongaraList');el.innerHTML=DONGARA.map((p,i)=>'<div class="prow"><span>'+p[0]+' — $'+p[1]+'/'+p[2]+'</span><input type="number" min="0" step="0.5" value="0" data-dong="'+i+'" oninput="calc()"></div>').join('');}
+function dongaraTotal(){let t=0,items=[];document.querySelectorAll('[data-dong]').forEach(inp=>{const q=parseFloat(inp.value)||0;if(q>0){const p=DONGARA[+inp.dataset.dong];t+=q*p[1];items.push(p[0]+' '+q+p[2]+' ($'+(q*p[1]).toFixed(2)+')');}});return{total:t,items};}
+function calc(){const f=document.getElementById('fulfil').value;const b=BOXES[selectedBox];const boxPrice=f==='delivery'?b.del:b.pickup;const d=dongaraTotal();document.getElementById('boxPriceLine').textContent=b.label+' box: '+money(boxPrice)+' ('+f+')';document.getElementById('totalLine').textContent=money(boxPrice+d.total);return{boxPrice,d};}
+document.getElementById('customBox').addEventListener('change',e=>{document.getElementById('customPicks').style.display=e.target.checked?'block':'none';});
+document.getElementById('fulfil').addEventListener('change',calc);
+function placeOrder(){
+ const name=document.getElementById('custName').value.trim();
+ if(!name){alert('Please add your name so Farmer Kev knows whose box it is.');return;}
+ const c=calc();const f=document.getElementById('fulfil').value;const b=BOXES[selectedBox];
+ const d=dongaraTotal();
+ const id='SRF-'+String(orders.length+1).padStart(3,'0');
+ const items=b.label+' box'+(document.getElementById('customBox').checked?' (CUSTOM: '+(document.getElementById('customText').value.trim()||'customer picks')+')':'')+(d.items.length?' + '+d.items.join(', '):'');
+ const o={id,name,date:'2026-11-24',method:f,box:items,total:+(c.boxPrice+d.total).toFixed(2),pay:document.getElementById('payMethod').value,paid:'unpaid',notes:document.getElementById('custNotes').value.trim(),source:'shop',from:document.getElementById('custFrom').value.trim()};
+ orders.push(o);save();renderHub();
+ const msg='Steele Road Farms order '+id+' — '+name+', '+items+', '+f+', total '+money(o.total)+', pay by '+o.pay+'. Orders close Thu 26 Nov, Geraldton Mon 30 Nov BCF 4:30-5:30pm / farm pickup Tue 1 Dec.';
+ document.getElementById('orderConfirm').innerHTML='<div class="card" style="border-color:var(--gold)"><h2>Order placed — thank you!</h2><p>Order number: <b>'+id+'</b><br>Total: <b class="price">'+money(o.total)+'</b><br>'+(f==='delivery'?'Geraldton delivery Mon 30 Nov, BCF 4:30–5:30pm':'Farm pickup Tue 1 Dec, morning')+'</p><p class="small">Your order is saved in this app and will show in Farmer Kev\'s Farm Hub on this device. On GitHub Pages there is no shared server, so please also send it to Steele Road Farms on Messenger so Kev has it on his phone:</p><pre>'+msg+'</pre><button class="ghost" onclick="copyText(document.querySelector(\'#orderConfirm pre\').textContent)">Copy order message</button></div>';
+ window.scrollTo(0,document.getElementById('orderConfirm').offsetTop);
+}
+function signCSA(){const n=document.getElementById('csaName').value.trim(),s=document.getElementById('csaSig').value.trim();if(!n||!s){alert('Please add your name and type it as your signature.');return;}document.getElementById('csaDone').innerHTML='<p style="margin-top:10px"><b>CSA signed — thank you, '+n+'.</b> No-obligation, you can pull out at any time. No contract, no guaranteed spot.</p>';}
+function lookupLoyalty(){const n=document.getElementById('loyName').value.trim().toLowerCase();const mine=orders.filter(o=>o.name.toLowerCase().includes(n));document.getElementById('loyOut').innerHTML=n?'<p style="margin-top:10px">Customer card for <b>'+n+'</b>: '+mine.length+' order(s) on record. Steele Dollars: set by Farmer Kev — ask him at pickup/delivery.</p>':'<p>Please add a name.</p>';}
+function signKid(){const n=document.getElementById('kidName').value.trim();if(!n){alert('Please add the kid\'s first name.');return;}document.getElementById('kidDone').innerHTML='<p style="margin-top:10px"><b>Welcome to Rats Patch Kids Club, '+n+'!</b> You start with 0 Kids Dollars — finish a mission to earn more. Kids Dollars are separate from Steele Dollars.</p>';}
+function unlockHub(){if(document.getElementById('hubPass').value===HUB_PASSCODE){document.getElementById('hubGate').style.display='none';document.getElementById('hubBody').style.display='block';renderHub();}else{alert('Wrong passcode — ask Farmer Kev.');}}
+function hubFilter(f){hubFilterVal=f;renderHub();}
+function renderHub(){
+ const tot=orders.reduce((a,o)=>a+o.total,0),paid=orders.filter(o=>o.paid==='paid').reduce((a,o)=>a+o.total,0),un=tot-paid;
+ document.getElementById('hubTotals').innerHTML='<p>Total: <b class="price">'+money(tot)+'</b> &bull; Paid: <b>'+money(paid)+'</b> &bull; Unpaid: <b class="price">'+money(un)+'</b> across '+orders.filter(o=>o.paid==='unpaid').length+' orders &bull; '+orders.length+' orders in total</p>';
+ const rows=orders.filter(o=>hubFilterVal==='all'||o.paid===hubFilterVal);
+ document.getElementById('hubRows').innerHTML=rows.map(o=>'<tr><td>'+o.id+'<br><span class="small">'+o.date+'</span></td><td>'+o.name+(o.notes?'<br><span class="flag">'+o.notes+'</span>':'')+'</td><td>'+o.box+'<br><span class="small">'+o.method+'</span></td><td>'+money(o.total)+'</td><td><span class="pill '+o.paid+'">'+o.paid.toUpperCase()+'</span><br><span class="small">'+o.pay+'</span></td><td>'+(o.paid==='unpaid'?'<button class="small" onclick="markPaid(\''+o.id+'\')">Mark paid</button>':'')+'</td></tr>').join('');
+ const ger=orders.filter(o=>o.method==='delivery'),farm=orders.filter(o=>o.method==='pickup');
+ const pack=(list,title)=>'<h3>'+title+' ('+list.length+')</h3>'+list.map((o,i)=>'<div class="prow"><span>Box '+(i+1)+' — '+o.id+' — '+o.name+'</span><span>'+o.box+' — '+money(o.total)+' — '+o.paid+'</span></div>').join('');
+ document.getElementById('packList').innerHTML=pack(ger,'Geraldton — Mon 30 Nov, BCF 4:30–5:30pm')+pack(farm,'Farm pickup — Tue 1 Dec, morning');
+}
+function markPaid(id){const o=orders.find(x=>x.id===id);if(o){o.paid='paid';save();renderHub();}}
+function exportOrders(){const blob=new Blob([JSON.stringify(orders,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.json';a.click();}
+function exportCSV(){const csv='id,name,date,method,box,total,pay,paid,notes\n'+orders.map(o=>[o.id,'"'+o.name+'"',o.date,o.method,'"'+o.box+'"',o.total,o.pay,o.paid,'"'+(o.notes||'')+'"'].join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.csv';a.click();}
+function resetSeed(){if(!confirm('Reset all orders back to the seeded 24? New shop orders will be lost.'))return;localStorage.removeItem('srf_orders_v1');load();renderHub();}
+load();renderBoxes();renderDongara();calc();
+</script>
+</body>
+</html>
