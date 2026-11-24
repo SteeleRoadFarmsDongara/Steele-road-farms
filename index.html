@@ -126,9 +126,9 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
 <!-- HUB -->
 <section class="view" id="view-hub">
   <div class="card" id="hubGate"><h2>Farm Hub — operator only</h2><p class="small">This is Farmer Kev's control side. Customers: please use the Shop tab.</p>
-  <label>Operator passcode</label><input id="hubPass" type="password" inputmode="numeric" placeholder="Enter passcode">
+  <label>Operator passcode</label><input id="hubPass" type="password" placeholder="Enter passcode">
   <button class="big" onclick="unlockHub()">Open Farm Hub</button>
-  <p class="small">Default passcode is <b>steele</b> — Farmer Kev, change HUB_PASSCODE in the app code to your own. This is a simple on-page gate on a public static page, not bank-grade security — do not store customer phone numbers or addresses here.</p></div>
+  <p class="small">Ask Farmer Kev for the passcode. This is a simple on-page gate on a public static page, not bank-grade security — do not store customer phone numbers or addresses here.</p></div>
   <div id="hubBody" style="display:none">
     <div class="card"><h2>Farm Hub — orders</h2><div id="hubTotals"></div>
     <p style="margin:10px 0"><button class="small" onclick="hubFilter('all')">All</button> <button class="small" onclick="hubFilter('unpaid')">Unpaid</button> <button class="small" onclick="hubFilter('paid')">Paid</button> <button class="small" onclick="exportOrders()">Export JSON</button> <button class="small" onclick="exportCSV()">Export CSV</button></p>
@@ -149,7 +149,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
 </div></nav>
 
 <script>
-const HUB_PASSCODE='steele';
+const HUB_PASSCODE='MOON9?';
 const BOXES={small:{label:'Small',pickup:30,del:35},standard:{label:'Standard',pickup:55,del:60},large:{label:'Large',pickup:100,del:105}};
 const DONGARA=[['Potatoes',6,'kg'],['Carrots',5,'kg'],['Beetroot',6,'kg'],['Zucchini',8,'kg'],['Pumpkin',3.5,'kg'],['Sweet potato',9,'kg'],['Brown onions',5,'kg'],['Tomatoes',8,'kg'],['Broccoli',4.5,'each'],['Cauliflower',7.5,'each'],['Celery',5,'bunch'],['Garlic',35,'kg']];
 const SEED=[
