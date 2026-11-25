@@ -25,7 +25,7 @@ header .tag{font-style:italic;color:#ddd;margin-top:4px;font-size:14px}
 .banner{background:#111;border:1px solid var(--green);border-radius:10px;padding:10px;margin:12px 0;font-size:14px;line-height:1.5}
 .banner b{color:var(--gold)}
 nav{position:fixed;left:0;right:0;bottom:0;background:#111;border-top:2px solid var(--gold);z-index:10}
-nav .grid{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav .grid{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
 nav button{background:none;border:none;color:var(--cream);padding:10px 2px;font-size:11px;cursor:pointer;border-right:1px solid #222}
 nav button.active{color:var(--gold);font-weight:800}
 .view{display:none}.view.active{display:block}
@@ -160,6 +160,16 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <button class="big" onclick="signKid()">Join Rats Patch Kids Club</button><div id="kidDone"></div></div>
 </section>
 
+<!-- MY CARD -->
+<section class="view" id="view-mycard">
+  <div class="card"><h2>My Card — log in</h2>
+  <p class="small">Log in with the name you order under and see your Tight Ass Loyalty Card, your Steele Dollars, and everything you have bought — plus your kids' Kids Dollars. This works on this device, where your orders are saved. (GitHub Pages has no shared server, so a login on another phone won't see orders from this one.)</p>
+  <label>Your name (as on your orders)</label><input id="myCardName" placeholder="e.g. Miranda Wall">
+  <label>Phone (optional)</label><input id="myCardPhone" placeholder="04xx xxx xxx" inputmode="tel">
+  <button class="big" onclick="loginCard()">Log in — show my card</button>
+  <div id="myCardOut"></div></div>
+</section>
+
 <!-- MESSAGES -->
 <section class="view" id="view-messages">
   <div class="card"><h2>Messages — talk to Farmer Kev</h2>
@@ -221,6 +231,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <button class="active" onclick="show('shop',this)">Shop</button>
   <button onclick="show('csa',this)">CSA &amp; Loyalty</button>
   <button onclick="show('kids',this)">Kids Club</button>
+  <button onclick="show('mycard',this)">My Card</button>
   <button onclick="show('hub',this)">Farm Hub</button>
   <button onclick="show('messages',this)">Messages <span id="msgBadge"></span></button>
 </div></nav>
@@ -309,6 +320,9 @@ function placeOrder(){
 function signCSA(){const n=document.getElementById('csaName').value.trim(),sg=document.getElementById('csaSig').value.trim();if(!n||!sg){alert('Please add your name and type it as your signature.');return;}csaForms.push({name:n,addr:document.getElementById('csaAddr').value.trim(),size:document.getElementById('csaSize').value,date:'2026-11-24'});saveCsa();renderHubCsa();document.getElementById('csaDone').innerHTML='<p style="margin-top:10px"><b>CSA signed — thank you, '+n+'.</b> No-obligation, you can pull out at any time. No contract, no guaranteed spot.</p>';}
 function renderHubCsa(){const el=document.getElementById('hubCsaList');if(!el)return;el.innerHTML=csaForms.length?csaForms.map(c=>'<div class="prow"><span><b>'+c.name+'</b><br><span class="small">'+c.addr+'</span></span><span>'+c.size+'<br><span class="small">'+c.date+'</span></span></div>').join(''):'<p class="small">No CSA forms signed yet on this device.</p>';}
 function lookupLoyalty(){const n=document.getElementById('loyName').value.trim();if(!n){document.getElementById('loyOut').innerHTML='<p>Please add a name.</p>';return;}const b=steeleDollars(n);document.getElementById('loyOut').innerHTML='<p style="margin-top:10px">Customer card for <b>'+n+'</b>: '+b.orders+' order(s) on record.<br>Paid so far: <b>$'+b.paidTotal.toFixed(2)+'</b><br>Steele Dollars balance: <b>'+b.dollars+' Steele $</b> (auto-added: $'+(INV.loyalty.earn||1)+' per $'+(INV.loyalty.per||10)+' paid).</p>';}
+function loginCard(){const n=document.getElementById('myCardName').value.trim();const out=document.getElementById('myCardOut');if(!n){out.innerHTML='<p>Please add your name.</p>';return;}renderMyCard(n);}
+function logoutCard(){document.getElementById('myCardOut').innerHTML='';document.getElementById('myCardName').value='';}
+function renderMyCard(n){const out=document.getElementById('myCardOut');const q=n.toLowerCase();const mine=orders.filter(o=>o.name.toLowerCase().includes(q)).slice().sort((a,b)=>(a.date<b.date?-1:1));const b=steeleDollars(n);const cardNo=mine.length?mine[0].id:'—';const myKids=kids.filter(k=>(k.parent||'').toLowerCase().includes(q));const myCsa=csaForms.filter(c=>(c.name||'').toLowerCase().includes(q));let h='<div style="margin-top:12px;border:2px solid var(--gold);border-radius:10px;padding:12px;background:#111"><h3 style="color:var(--gold)">🪪 Tight Ass Loyalty Card</h3><p><b>'+n.replace(/</g,'&lt;')+'</b><br>Customer no: <b>'+cardNo+'</b><br>Orders: <b>'+mine.length+'</b> &nbsp; Paid so far: <b>$'+b.paidTotal.toFixed(2)+'</b><br>Steele Dollars balance: <b>'+b.dollars+' Steele $</b> (auto-added: $'+(INV.loyalty.earn||1)+' per $'+(INV.loyalty.per||10)+' paid)</p></div>';h+='<h3 style="margin-top:14px">What you have purchased</h3>';h+=mine.length?mine.map(o=>'<div class="prow"><span><b>'+o.date+'</b> — '+o.box+' box ('+o.method+')<br><span class="small">Order '+o.id+(o.notes?' — '+o.notes.replace(/</g,'&lt;'):'')+'</span></span><span><b>$'+Number(o.total).toFixed(2)+'</b><br><span class="small">'+(o.paid==='paid'?'✅ Paid':'⏳ Unpaid')+'</span></span></div>').join(''):'<p class="small">No purchases on this device yet — place your first order in the Shop and it will show here.</p>';if(myCsa.length){h+='<h3 style="margin-top:14px">Your CSA</h3>'+myCsa.map(c=>'<div class="prow"><span>CSA signed '+(c.date||'')+'</span><b>'+(c.size||'').replace(/</g,'&lt;')+'</b></div>').join('');}h+='<h3 style="margin-top:14px">Rats Patch Kids Club — your kids</h3>';h+=myKids.length?myKids.map(k=>'<div class="prow"><span>🧒 <b>'+k.name.replace(/</g,'&lt;')+'</b></span><b>'+k.dollars+' Kids $</b></div>').join(''):'<p class="small">No kids signed up under this name yet — join the Rats Patch Kids Club on the Kids Club tab.</p>';h+='<p style="margin-top:12px"><button class="ghost" onclick="logoutCard()">Log out</button></p>';out.innerHTML=h;}
 function signKid(){const n=document.getElementById('kidName').value.trim();if(!n){alert('Please add the kid first name.');return;}const par=document.getElementById('kidParent').value.trim();kids.push({name:n,parent:par,date:'2026-11-24',dollars:0});saveKids();renderHubKids();document.getElementById('kidDone').innerHTML='<p style="margin-top:10px"><b>Welcome to Rats Patch Kids Club, '+n+'!</b> You start with 0 Kids Dollars — finish a mission to earn more. Kids Dollars are separate from Steele Dollars.</p>';}
 function renderHubKids(){const el=document.getElementById('hubKidList');if(!el)return;el.innerHTML=kids.length?kids.map((k,i)=>'<div class="prow"><span><b>'+k.name+'</b> — parent '+k.parent+'<br><span class="small">'+k.date+'</span></span><span>'+k.dollars+' Kids $<br><button class="small" onclick="giveKids('+i+',5)">+5 Kids $</button></span></div>').join(''):'<p class="small">No kids signed up yet on this device.</p>';}
 function giveKids(i,amt){kids[i].dollars+=amt;saveKids();renderHubKids();}
