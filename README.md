@@ -54,3 +54,8 @@ Open `index.html` in a browser, or run `python3 -m http.server` in this folder a
 - `kids.html` — Rats Patch Kids Club: sign-up, missions with auto Kids Dollars, invented vegetable characters.
 - `hub.html` — Farm Hub, operator-only behind the passcode, one neat Edit page: prices, stock, specials, gift cards, orders, pack list, messages, customers, kids, CSA, jokes, weekly reset. No customer link to it. Editing is for Farmer Kev only — no editing controls on any customer page.
 All pages share the same localStorage data on the same device (orders, gift cards, loyalty, kids, inventory). GitHub Pages is static — no live cross-device sync.
+
+## Registration wall + customer book + new-order alerts (2026-11-25)
+- Customer apps (shop, loyalty, kids) open on a registration page first: name, phone, address, pickup/delivery preference. No browsing without registering. Registration saves on the device (srf_customers_v1 / srf_customer_v1) and pre-fills checkout. Switch-customer link clears it.
+- Hub has a private Customer book (Kev only, behind the passcode): every registered customer with phone, address, preference, orders, paid total, Steele Dollars and box stamps — plus order-only customers merged in.
+- New-order alerts in the Hub: a 🔔 NEW badge on the gate before unlocking, a new-orders banner inside the Hub, NEW pills on fresh order rows, and a Mark-all-as-seen button. Static-site limit: a customer's phone cannot push a live notification to Kev's phone — the one-tap Copy-order button (Messenger) is the bridge that gets the order to him.
