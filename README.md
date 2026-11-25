@@ -45,3 +45,12 @@ Once the repo exists, Muse can push updates to it with the connected GitHub acco
 
 ## Local test
 Open `index.html` in a browser, or run `python3 -m http.server` in this folder and open http://localhost:8000.
+
+
+## Split into separate apps (2026-11-25)
+- `index.html` — front door: links to the three customer apps only. The Farm Hub is NOT linked from here.
+- `shop.html` — customer veggie-buying app: what's in this week's box, pick a box size, add extras (Dongara pick-your-own + Special of the Week), subscribe (CSA), gift cards, checkout, messages. No Hub tab.
+- `loyalty.html` — My Card login by name: LARGE visual loyalty card (Steele Dollars 0.50 per $10 paid, box stamps 1 per box, gift at 10, free box at 100), purchase history, kids' Kids Dollars, and a LARGE visual gift card section with check-by-code.
+- `kids.html` — Rats Patch Kids Club: sign-up, missions with auto Kids Dollars, invented vegetable characters.
+- `hub.html` — Farm Hub, operator-only behind the passcode, one neat Edit page: prices, stock, specials, gift cards, orders, pack list, messages, customers, kids, CSA, jokes, weekly reset. No customer link to it. Editing is for Farmer Kev only — no editing controls on any customer page.
+All pages share the same localStorage data on the same device (orders, gift cards, loyalty, kids, inventory). GitHub Pages is static — no live cross-device sync.
