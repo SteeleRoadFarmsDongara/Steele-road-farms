@@ -76,10 +76,10 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <b>Organic and Local</b>. No door delivery.
 </div>
 <div style="text-align:center;padding:6px 0 2px"><a href="https://www.facebook.com/SteeleRoadFarms" target="_blank" rel="noopener" aria-label="Steele Road Farms on Facebook" title="Steele Road Farms on Facebook"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a></div>
-<div class="card" id="installCard" style="border:3px solid var(--gold);text-align:center;padding:18px"><h2 style="font-size:26px;color:var(--gold)">\uD83D\uDCF2 GET THE APP ON YOUR PHONE</h2>
-<p style="font-size:17px;margin:8px 0"><b>Free \u2014 no app store needed.</b> Shop, veggie boxes, your loyalty card, gift cards and the Kids Club, all in one place on your home screen.</p>
+<div class="card" id="installCard" style="border:3px solid var(--gold);text-align:center;padding:18px"><h2 style="font-size:26px;color:var(--gold)">📲 GET THE APP ON YOUR PHONE</h2>
+<p style="font-size:17px;margin:8px 0"><b>Free — no app store needed.</b> Shop, veggie boxes, your loyalty card, gift cards and the Kids Club, all in one place on your home screen.</p>
 <p><button class="big" id="installBtn" onclick="installApp()" style="font-size:20px;padding:14px 28px">Install app</button></p>
-<p class="small" id="installHelp">Android: tap Install above, or menu (\u22EE) \u2192 Add to Home screen / Install app.<br>iPhone: tap Share \u2192 Add to Home Screen.</p></div>
+<p class="small" id="installHelp">Android: tap Install above, or menu (⋮) → Add to Home screen / Install app.<br>iPhone: tap Share → Add to Home Screen.</p></div>
 
 <div class="card" id="jokeCard" style="text-align:center"><h2>&#128514; Joke of the day</h2><p id="jokeText" style="font-size:17px"></p><p class="small">A fresh farm dad joke every day — fruit, veg or farm, approved by Farmer Kev.</p></div>
 <div class="card" style="border:3px solid var(--gold);text-align:center"><h2 style="font-size:24px;color:var(--gold)">🛒 Shop — veggie boxes &amp; pick-your-own</h2><p>Fortnightly boxes, Dongara pick-your-own, specials and gift cards.</p><p><a href="shop.html"><button class="big">Open the Shop</button></a></p></div>
@@ -91,6 +91,13 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
 function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}else{document.getElementById('installHelp').innerHTML='On your phone: Android \u2014 menu (\u22EE) \u2192 Add to Home screen / Install app.<br>iPhone \u2014 Share \u2192 Add to Home Screen.';}}
+const DEFAULT_JOKES=["Why did the scarecrow win an award? Because he was outstanding in his field!","What did the carrot say to the farmer? I am rooting for you!","Why did the tomato blush? It saw the salad dressing.","What did the lettuce say to the celery? Stop stalking me!","Why are potatoes such good friends? They always chip in.","What did the pumpkin say to the farmer? You are really raising the squash.","What did the corn say when it got a compliment? Aw, shucks!","Why did the banana go to the doctor? It was not peeling well.","What did the grape say when it got stepped on? Nothing — it just let out a little wine.","How do you make a small fortune on a farm? Start with a large one.","What do you call a zucchini that wins the lottery? A squash-ionaire!","Why are farmers so good at maths? They know how to count their chickens.","What do you call a cow with no legs? Ground beef.","Why did the farmer plant light bulbs? He wanted to grow a power plant."];
+let jokes=[];
+function loadJokes(){try{const s=localStorage.getItem('srf_jokes_v1');if(s){jokes=JSON.parse(s);return;}}catch(e){}jokes=DEFAULT_JOKES.map(t=>({text:t,approved:true}));saveJokes();}
+function saveJokes(){try{localStorage.setItem('srf_jokes_v1',JSON.stringify(jokes));}catch(e){}}
+function dailyJoke(){const ok=jokes.filter(j=>j.approved);if(!ok.length)return 'No jokes approved yet — Farmer Kev is writing one!';const day=Math.floor(Date.now()/86400000);return ok[day%ok.length].text;}
+function renderJoke(){const el=document.getElementById('jokeText');if(el)el.textContent=dailyJoke();}
+loadJokes();renderJoke();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 </script>
 <script src="https://www.gstatic.com/firebasejs/13.4.0/firebase-app-compat.js"></script>

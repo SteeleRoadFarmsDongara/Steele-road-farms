@@ -78,7 +78,7 @@
     try { localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch (e) {}
   }
 
-  var db = null, docRef = null, unsub = null;
+  var db = null, docRef = null, unsub = null, settled = false;
   var applying = false, pushTimer = null, syncState = 'off', syncNote = '';
 
   function callFn(name) {
@@ -89,7 +89,7 @@
   }
 
   function setStatus(state, note) {
-    syncState = state; syncNote = note || '';
+    syncState = state; syncNote = note || ''; settled = true;
     var el = document.getElementById('srfSyncBadge');
     if (el) {
       var label = {
@@ -276,6 +276,11 @@
         if (firebase.auth) firebase.auth().signInAnonymously().catch(function () {});
       } catch (e) {}
       firstSync();
+      /* If Firestore never answers (no database yet, or no connection),
+         don't leave the badge stuck on "starting\u2026". Settle it. */
+      setTimeout(function () {
+        if (!settled) setStatus('nodatabase', 'Firestore did not answer \u2014 no database yet, or no connection. In Firebase console: Build > Firestore Database > Create database (production mode, Sydney).');
+      }, 8000);
     } catch (err) {
       setStatus('off', 'Sync could not start — app still works locally.');
     }
