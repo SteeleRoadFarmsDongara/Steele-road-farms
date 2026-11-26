@@ -36,7 +36,8 @@
     nextday: 'srf_nextday_v1',
     jokes: 'srf_jokes_v1',
     market: 'srf_market_v1',
-    hubUsers: 'srf_hub_users_v1'
+    hubUsers: 'srf_hub_users_v1',
+    cart: 'srf_cart_v1'
   };
   var META_KEY = 'srf_sync_meta_v1';
   var DEVICE_KEY = 'srf_device_v1';
@@ -45,11 +46,11 @@
   var SAVE_FNS = ['save', 'saveInv', 'saveGift', 'saveArchives', 'saveMessages',
     'saveKids', 'saveCsa', 'saveCustomers', 'saveReferrals', 'saveFeatured',
     'saveWaitlist', 'saveCutoff', 'saveWeekStart', 'saveNotified', 'saveNextDay',
-    'saveJokes', 'saveMarketPrices', 'savePartnerPass'];
+    'saveJokes', 'saveMarketPrices', 'savePartnerPass', 'saveCart'];
   var LOAD_FNS = ['load', 'loadInv', 'loadGift', 'loadArchives', 'loadMessages',
     'loadKids', 'loadCsa', 'loadCustomers', 'loadReferrals', 'loadFeatured',
     'loadWaitlist', 'loadCutoff', 'loadWeekStart', 'loadNotified', 'loadNextDay',
-    'loadJokes', 'loadMarketPrices'];
+    'loadJokes', 'loadMarketPrices', 'loadCart'];
   var RENDER_FNS = ['renderHub', 'renderWaitList', 'renderNextDay', 'renderOldOrders',
     'renderRoundInfo', 'renderNotifyList', 'renderArchives', 'renderHubMessages',
     'renderHubKids', 'renderHubCsa', 'renderHubLoyalty', 'renderHubCustomers',
@@ -58,7 +59,7 @@
     'gateCustomerPages', 'renderCutoffBanner', 'renderShopDates',
     'renderFulfilOptions', 'renderMyWaitList', 'renderMyCard', 'renderBoxes',
     'renderDongara', 'renderStock', 'renderWhatsInBox', 'renderZuc',
-    'renderSpecial', 'renderGiftGrid', 'calc', 'renderMarketPrices'];
+    'renderSpecial', 'renderGiftGrid', 'calc', 'renderMarketPrices', 'renderCart'];
 
   var deviceId = '';
   try {

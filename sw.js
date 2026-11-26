@@ -1,6 +1,6 @@
-/* Steele Road Farms — offline cache. v12 — badge timeout, install symbols, front-door joke, cutoff-day fix */
-const CACHE = 'srf-v12';
-const FILES = ['./', 'index.html', 'shop.html', 'loyalty.html', 'kids.html', 'hub.html', 'sync.js', 'manifest.webmanifest', 'manifest-hub.json', 'icon.svg', 'hub-icon.svg', 'qrcode.min.js'];
+/* Steele Road Farms — offline cache. v13 — shop cart (cart.js) */
+const CACHE = 'srf-v13';
+const FILES = ['./', 'index.html', 'shop.html', 'loyalty.html', 'kids.html', 'hub.html', 'sync.js', 'cart.js', 'manifest.webmanifest', 'manifest-hub.json', 'icon.svg', 'hub-icon.svg', 'qrcode.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
 });
