@@ -93,5 +93,9 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}else{document.getElementById('installHelp').innerHTML='On your phone: Android \u2014 menu (\u22EE) \u2192 Add to Home screen / Install app.<br>iPhone \u2014 Share \u2192 Add to Home Screen.';}}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 </script>
+<script src="https://www.gstatic.com/firebasejs/13.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/13.4.0/firebase-auth-compat.js"></script>
+<script src="sync.js"></script>
 </body>
 </html>
