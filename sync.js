@@ -37,7 +37,8 @@
     jokes: 'srf_jokes_v1',
     market: 'srf_market_v1',
     hubUsers: 'srf_hub_users_v1',
-    cart: 'srf_cart_v1'
+    cart: 'srf_cart_v1',
+    reviews: 'srf_reviews_v1'
   };
   var META_KEY = 'srf_sync_meta_v1';
   var DEVICE_KEY = 'srf_device_v1';
@@ -46,18 +47,18 @@
   var SAVE_FNS = ['save', 'saveInv', 'saveGift', 'saveArchives', 'saveMessages',
     'saveKids', 'saveCsa', 'saveCustomers', 'saveReferrals', 'saveFeatured',
     'saveWaitlist', 'saveCutoff', 'saveWeekStart', 'saveNotified', 'saveNextDay',
-    'saveJokes', 'saveMarketPrices', 'savePartnerPass', 'saveCart'];
+    'saveJokes', 'saveMarketPrices', 'savePartnerPass', 'saveCart', 'saveReviews'];
   var LOAD_FNS = ['load', 'loadInv', 'loadGift', 'loadArchives', 'loadMessages',
     'loadKids', 'loadCsa', 'loadCustomers', 'loadReferrals', 'loadFeatured',
     'loadWaitlist', 'loadCutoff', 'loadWeekStart', 'loadNotified', 'loadNextDay',
-    'loadJokes', 'loadMarketPrices', 'loadCart'];
+    'loadJokes', 'loadMarketPrices', 'loadCart', 'loadReviews'];
   var RENDER_FNS = ['renderHub', 'renderWaitList', 'renderNextDay', 'renderOldOrders',
     'renderRoundInfo', 'renderNotifyList', 'renderArchives', 'renderHubMessages',
     'renderHubKids', 'renderHubCsa', 'renderHubLoyalty', 'renderHubCustomers',
     'renderHubJokes', 'renderCustomerBook', 'renderHubAlert', 'renderReferrals',
     'renderMessages', 'msgBadge', 'renderKidCharacters', 'renderJoke',
     'gateCustomerPages', 'renderCutoffBanner', 'renderShopDates',
-    'renderFulfilOptions', 'renderMyWaitList', 'renderMyCard', 'renderBoxes',
+    'renderFulfilOptions', 'renderMyWaitList', 'renderMyCard', 'renderBoxes', 'renderReviews', 'renderHarvestShare', 'renderHubHome', 'renderCompare',
     'renderDongara', 'renderStock', 'renderWhatsInBox', 'renderZuc',
     'renderSpecial', 'renderGiftGrid', 'calc', 'renderMarketPrices', 'renderCart'];
 
@@ -304,10 +305,33 @@
     } catch (e) {}
   });
 
+  /* Re-pull the shared store from Firestore, then run cb. Used by the
+     Hub Refresh button: pull first, then re-render everything. Never
+     seeds the store — if the doc does not exist yet there is nothing
+     to pull, so it just runs cb. */
+  function pullNow(cb) {
+    var done = function () { try { if (typeof cb === 'function') cb(); } catch (e) {} };
+    if (!docRef) { done(); return; }
+    setStatus('syncing');
+    docRef.get().then(function (doc) {
+      if (doc.exists) {
+        var remote = doc.data();
+        if (remote && remote.data && (remote.updatedAt || 0) > (meta.lastSyncAt || 0) &&
+            remote.updatedBy !== deviceId) {
+          applySnapshot(remote);
+        }
+        setStatus('synced');
+      } else {
+        setStatus('synced');
+      }
+      done();
+    }).catch(function (err) { handleSyncError(err); done(); });
+  }
+
   window.SRF_SYNC = {
     status: function () { return { state: syncState, note: syncNote, deviceId: deviceId, meta: meta }; },
     pushNow: pushNow,
-    pullNow: function () { if (docRef) firstSync(); },
+    pullNow: pullNow,
     config: FIREBASE_CONFIG
   };
 

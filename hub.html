@@ -25,7 +25,7 @@ header .tag{font-style:italic;color:#ddd;margin-top:4px;font-size:14px}
 .banner{background:#111;border:1px solid var(--green);border-radius:10px;padding:10px;margin:12px 0;font-size:14px;line-height:1.5}
 .banner b{color:var(--gold)}
 nav{position:fixed;left:0;right:0;bottom:0;background:#111;border-top:2px solid var(--gold);z-index:10}
-nav .grid{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+nav .grid{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav button{background:none;border:none;color:var(--cream);padding:10px 2px;font-size:11px;cursor:pointer;border-right:1px solid #222}
 nav button.active{color:var(--gold);font-weight:800}
 .view{display:none}.view.active{display:block}
@@ -51,12 +51,23 @@ td,th{padding:6px 4px;border-bottom:1px solid #222;text-align:left;vertical-alig
 .zuc{border:2px solid var(--gold);background:#221a00;text-align:center;font-size:18px;font-weight:800;padding:14px;border-radius:12px;margin:12px 0}
 .zuc span{color:var(--gold)}
 pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid #333;border-radius:8px;padding:10px;font-size:12px}
+.creamcard{background:#fff8e7;color:#1c1a17;border-radius:22px;padding:22px 18px;margin:14px 0;box-shadow:0 3px 0 rgba(245,179,1,.35)}
+.creamcard h2{font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:1.15;margin:10px 0 8px}
+.creamcard p{color:#3d362e;font-size:16px;line-height:1.5}
+.creamcard .small{color:#6b6257}
+.creamcard .cc-ic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--orange),var(--gold));display:flex;align-items:center;justify-content:center;font-size:30px}
+.creamcard input,.creamcard select{background:#fff;color:#000;border-color:#cbb98a}
+.creamcard .pill.unpaid{background:#5a1010;color:#ffb3b3}
+.hubtab{display:none}.hubtab.active{display:block}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.statcard{margin:0;border-top:6px solid var(--gold)}
+.statnum{font-size:30px;font-weight:900;margin:6px 0;color:#1c1a17}
 @media print{nav{display:none}body{max-width:100%;color:#000;background:#fff}.card,header,.banner{border-color:#000;color:#000}}
 </style>
 </head>
 <body>
 <header>
-  <div class="srf grad">Steele Road Farms</div>
+  <div class="srf grad">Steele Road<br>Farms</div>
   <div class="sub">EST-2025</div>
   <div class="tag">It's sorta what we do around here.</div>
 </header>
@@ -77,35 +88,67 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
   <div id="hubGateAlert"></div>
   <p class="small">Farmer Kev uses his own passcode. Partner sets their own passcode the first time they open the Hub — it lives on their own phone. This is a simple on-page gate on a public static page, not bank-grade security — do not store customer phone numbers or addresses here.</p></div>
   <div id="hubBody" style="display:none">
-    <div class="card" style="border:3px solid var(--gold);text-align:center"><h2>🔄 Refresh everything</h2><p><button class="big" id="refreshBtn" onclick="refreshHub()" style="font-size:20px;padding:16px 28px">🔄 Refresh</button></p><p class="small" id="lastRefreshed">Last refreshed: —</p><p class="small">Refreshes everything on this device — orders, totals, pack list, wait list, next-day deliveries, stock, prices, the WA market price list and notifications — and checks for a new app version. It can only refresh what is on this device: it cannot pull orders from customers' phones, because the app has no cross-device sync.</p></div>
-    <div class="card" style="border:3px solid var(--gold)"><h2>✏️ Farm Hub — edit everything, one page</h2><p>Everything you need to change is on this one page — prices, stock, specials, gift cards, orders, messages and customers. Big buttons, no tabs. Only you can get in here.</p></div>
-    <div id="hubNewAlert"></div>
+<div class="hubtab active" id="tab-home">
+<div class="creamcard">
+<h2 class="grad">G’day,<br>Farmer Kev.</h2>
+<div style="display:flex;gap:12px;align-items:flex-start">
+<div style="flex:1"><p>Orders, harvest and packing, all in one place. Let’s see what the patch is up to.</p></div>
+<div style="background:#000;border-radius:12px;padding:8px;text-align:center;min-width:86px"><div style="font-size:40px">🐶</div><div style="color:#fff8e7;font-size:11px;font-weight:700">Farmer Cloud</div></div>
+</div>
+<label style="color:#6b6257">Pick a date to see that round</label>
+<input type="date" id="hubDatePicker" value="2026-11-30" onchange="hubDateChanged()">
+<div id="hubDateInfo" class="small" style="margin-top:8px"></div>
+</div>
+<div class="statgrid">
+<div class="creamcard statcard" style="border-top-color:#63a446"><div class="small"><b>ORDERS IN RUN</b> 📦</div><div class="statnum" id="statOrders">—</div><div class="small" id="statOrdersSub"></div></div>
+<div class="creamcard statcard" style="border-top-color:#f26a1b"><div class="small"><b>BOX SALES</b> 🧾</div><div class="statnum" id="statSales">—</div><div class="small" id="statSalesSub"></div></div>
+<div class="creamcard statcard" style="border-top-color:#f5b301"><div class="small"><b>HARVEST LOGGED</b> 🥕</div><div class="statnum" id="statHarvest">—</div><div class="small" id="statHarvestSub"></div></div>
+<div class="creamcard statcard" style="border-top-color:#e23b2e"><div class="small"><b>WAITING LIST</b> ⌛</div><div class="statnum" id="statWait">—</div><div class="small" id="statWaitSub"></div></div>
+</div>
 
-    <div class="card"><h2>Farm Hub — orders</h2><div id="hubTotals"></div>
+<div class="card" style="border:3px solid var(--gold);text-align:center"><h2>🔄 Refresh everything</h2><p><button class="big" id="refreshBtn" onclick="refreshHub()" style="font-size:20px;padding:16px 28px">🔄 Refresh</button></p><p class="small" id="lastRefreshed">Last refreshed: —</p><p class="small">Refreshes everything on this device — orders, totals, pack list, wait list, next-day deliveries, stock, prices, the WA market price list and notifications — and checks for a new app version. It pulls the shared store from Firebase first — orders, totals, pack list, wait list, stock and prices from every device — then re-renders everything and checks for a new app version.</p></div>
+<div id="hubNewAlert"></div>
+</div>
+<div class="hubtab" id="tab-orders">
+<div class="card"><h2>Farm Hub — orders</h2><div id="hubTotals"></div>
     <p style="margin:10px 0"><button class="small" onclick="hubFilter('all')">All</button> <button class="small" onclick="hubFilter('unpaid')">Unpaid</button> <button class="small" onclick="hubFilter('paid')">Paid</button> <button class="small" onclick="exportOrders()">Export JSON</button> <button class="small" onclick="exportCSV()">Export CSV</button></p>
     <div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Customer</th><th>Box / items</th><th>Total</th><th>Pay</th><th></th></tr></thead><tbody id="hubRows"></tbody></table></div></div>
-    <div class="card"><h2>Old orders — already delivered</h2><p class="small">Orders from on or before Fri 13 Nov 2026 were already delivered — they do not count for this fortnight and are not in the pack list or totals. Kept here for the record.</p><div id="oldOrderList"></div></div>
-    <div class="card" style="border:3px solid var(--gold)"><h2>Wait list — for next fortnight</h2><p class="small">Orders placed after the Thursday cutoff — or once the week hits its 15-box cap — wait here. They are <b>not</b> in this fortnight's pack list. When you close the fortnight they roll into next fortnight's orders automatically. Or move one now with its button (it goes straight into the orders list and shows in the pack list).</p><div id="waitList"></div></div>
-    <div class="card" style="border:3px solid var(--gold)"><h2>🚚 Next-day deliveries — wait-list overflow</h2><p class="small">When the wait list builds up and there is enough stock, bring wait-listed orders forward to tomorrow — Geraldton and Dongara customers alike. Pick them from the wait list below with <b>Next-day delivery</b>, then copy the message to tell each customer.</p><div id="nextDayList"></div></div>
-    <div class="card"><h2>📣 Tell this week's customers — Monday delivery</h2><p class="small">Everyone who has ordered for this fortnight. Tap <b>Copy message</b>, paste it into Messenger for that customer, then tap <b>Mark notified</b> so you know who has been told. The app can't push a message to a customer's phone by itself — Messenger is how it reaches them.</p><div id="notifyList"></div></div>
-    <div class="card"><h2 id="packListTitle">Pack list — Mon 30 Nov Geraldton / Tue 1 Dec farm</h2><div id="packList"></div>
+<div class="card"><h2>Old orders — already delivered</h2><p class="small">Orders from on or before Fri 13 Nov 2026 were already delivered — they do not count for this fortnight and are not in the pack list or totals. Kept here for the record.</p><div id="oldOrderList"></div></div>
+<div class="card" style="border:3px solid var(--gold)"><h2>Wait list — for next fortnight</h2><p class="small">Orders placed after the Thursday cutoff — or once the week hits its 15-box cap — wait here. They are <b>not</b> in this fortnight's pack list. When you close the fortnight they roll into next fortnight's orders automatically. Or move one now with its button (it goes straight into the orders list and shows in the pack list).</p><div id="waitList"></div></div>
+<div class="card" style="border:3px solid var(--gold)"><h2>🚚 Next-day deliveries — wait-list overflow</h2><p class="small">When the wait list builds up and there is enough stock, bring wait-listed orders forward to tomorrow — Geraldton and Dongara customers alike. Pick them from the wait list below with <b>Next-day delivery</b>, then copy the message to tell each customer.</p><div id="nextDayList"></div></div>
+<div class="card"><h2>📣 Tell this week's customers — Monday delivery</h2><p class="small">Everyone who has ordered for this fortnight. Tap <b>Copy message</b>, paste it into Messenger for that customer, then tap <b>Mark notified</b> so you know who has been told. The app can't push a message to a customer's phone by itself — Messenger is how it reaches them.</p><div id="notifyList"></div></div>
+<div class="card"><h2>Messages — from customers (private)</h2>
+    <p class="small">Private — only you see this, behind your Farm Hub passcode. One thread per customer, newest first. Type your reply in the thread and tap <b>Send reply</b> — it stays in that customer's thread and shows to them on this device too. For a reply they will actually see on their phone, also send it on Messenger — tap <b>Copy for Messenger</b> in the thread.</p>
+    <div id="hubMsgList"></div>
+    <p><button class="small" onclick="exportMessages()">Export messages (JSON)</button></p></div>
+<div class="card">
+<h2 id="packListTitleOrders">Pack list</h2>
+<div id="packListOrders"></div>
+<button class="big" onclick="window.print()">Print pack list</button>
+</div>
+
+</div>
+<div class="hubtab" id="tab-packing">
+<div class="card"><h2 id="packListTitle">Pack list — Mon 30 Nov Geraldton / Tue 1 Dec farm</h2><div id="packList"></div>
     <button class="big" onclick="window.print()">Print pack list</button></div>
-    <div class="card"><h2>Rats Patch Kids Club — sign-ups</h2><div id="hubKidList"></div></div>
-    <div class="card"><h2>Daily joke — approval</h2><p class="small">The joke of the day changes automatically every day, from approved jokes only. Add your own and approve it here — nothing shows until you approve it.</p><div id="hubJokeToday"></div><label>Add a joke</label><input id="newJokeText" placeholder="Type a farm dad joke..."><button class="small" onclick="addJoke()">Add joke</button><div id="hubJokeList" style="margin-top:10px"></div></div>
-    <div class="card"><h2>CSA — signed forms</h2><div id="hubCsaList"></div></div>
-    <div class="card"><h2>Tight Ass Loyalty — balances</h2><p class="small">Steele Dollars add up automatically: 0.5 per $10 paid (change the rate in Shop inventory below).</p><div id="hubLoyaltyList"></div></div>
-    <div class="card"><h2>Customers — purchases &amp; loyalty cards</h2><p class="small">Every customer, their purchases and their loyalty card — for your eyes only, in the Hub.</p><div id="hubCustomerList"></div></div>
-    <div class="card" style="border:3px solid var(--gold)"><h2>Scan a loyalty card</h2><p class="small">Scan a customer's card with your phone camera (copy the code it shows) or type their name or card code here — it pulls up their card and balance.</p><label>Card code or customer name</label><input id="hubScanCode" placeholder="e.g. SRF-CARD-1001 or Miranda Wall"><p style="margin-top:10px"><button class="big" onclick="lookupCard()">Look up card</button></p><div id="hubScanOut"></div></div>
-    <div class="card"><h2>📖 Customer book — private, Kev only</h2><p class="small">Every registered customer in one place — name, phone, address, pickup or delivery, orders and loyalty. Nobody else can see this.</p><div id="hubCustomerBook"></div></div>
-    <div class="card" style="border:3px solid var(--gold)"><h2>🤝 Referrals — free boxes owed</h2><p class="small">When a new customer orders their first box with someone’s referral code, the new customer gets 50% off that box and the referrer gets a FREE box the same size. Owed free boxes are listed here — tap <b>Mark as claimed</b> when you’ve given it to them.</p><div id="hubReferralList"></div></div>
-    <div class="card"><h2>Fortnightly reset &amp; past orders</h2>
+<div class="card"><h2>Fortnightly reset &amp; past orders</h2>
     <p class="small">When the fortnight's deliveries and pickups are done, close the fortnight. That files all of this fortnight's orders away, clears the pack list, and starts you fresh for next fortnight. Gift cards and shop inventory are <b>not</b> cleared. Order numbers restart each fortnight — past fortnights are filed below. Wait-listed orders roll into the new fortnight automatically.</p>
     <p class="small" id="roundInfo"></p>
     <p style="margin-top:10px"><button class="big" onclick="closeWeek()">Close this fortnight &amp; start fresh</button>
     <button class="ghost" onclick="exportAllArchives()">Export all past orders (JSON)</button></p>
     <div id="archiveList" style="margin-top:10px"></div><div id="archiveDetail"></div></div>
-    <div class="card"><h2>Shop inventory — edit</h2>
-    <p class="small">Change prices, stock and gift card amounts here. Hit <b>Save inventory</b> and the Shop updates straight away on this device. This saves on this device only — same as orders on GitHub Pages.</p><p class="small"><b>Stock count is only for you — customers never see it.</b> The Shop only shows ✅ Available or ❌ Not available. Set the stock count to 0 and that veggie flips to Not available in the Shop straight away; put a number back in and it is Available again.</p>
+</div>
+<div class="hubtab" id="tab-farm">
+<div class="card"><h2>Rats Patch Kids Club — sign-ups</h2><div id="hubKidList"></div></div>
+<div class="card"><h2>Daily joke — approval</h2><p class="small">The joke of the day changes automatically every day, from approved jokes only. Add your own and approve it here — nothing shows until you approve it.</p><div id="hubJokeToday"></div><label>Add a joke</label><input id="newJokeText" placeholder="Type a farm dad joke..."><button class="small" onclick="addJoke()">Add joke</button><div id="hubJokeList" style="margin-top:10px"></div></div>
+<div class="card"><h2>CSA — signed forms</h2><div id="hubCsaList"></div></div>
+<div class="card"><h2>Tight Ass Loyalty — balances</h2><p class="small">Steele Dollars add up automatically: 0.5 per $10 paid (change the rate in Shop inventory below).</p><div id="hubLoyaltyList"></div></div>
+<div class="card"><h2>Customers — purchases &amp; loyalty cards</h2><p class="small">Every customer, their purchases and their loyalty card — for your eyes only, in the Hub.</p><div id="hubCustomerList"></div></div>
+<div class="card" style="border:3px solid var(--gold)"><h2>Scan a loyalty card</h2><p class="small">Scan a customer's card with your phone camera (copy the code it shows) or type their name or card code here — it pulls up their card and balance.</p><label>Card code or customer name</label><input id="hubScanCode" placeholder="e.g. SRF-CARD-1001 or Miranda Wall"><p style="margin-top:10px"><button class="big" onclick="lookupCard()">Look up card</button></p><div id="hubScanOut"></div></div>
+<div class="card"><h2>📖 Customer book — private, Kev only</h2><p class="small">Like a real book — tap a letter, then tap a customer to open their own page. Nobody else can see this.</p><div id="hubCustomerBook"></div></div>
+<div class="card" style="border:3px solid var(--gold)"><h2>🤝 Referrals — free boxes owed</h2><p class="small">When a new customer orders their first box with someone’s referral code, the new customer gets 50% off that box and the referrer gets a FREE box the same size. Owed free boxes are listed here — tap <b>Mark as claimed</b> when you’ve given it to them.</p><div id="hubReferralList"></div></div>
+<div class="card"><h2>Shop inventory — edit</h2>
+    <p class="small">Change prices, stock and gift card amounts here. Hit <b>Save inventory</b> and the Shop updates straight away on every device — it saves to the shared store.</p><p class="small"><b>Stock count is only for you — customers never see it.</b> The Shop only shows ✅ Available or ❌ Not available. Set the stock count to 0 and that veggie flips to Not available in the Shop straight away; put a number back in and it is Available again.</p>
     <h3 style="margin-top:10px">Veggie box prices ($)</h3><div id="invBoxes"></div>
     <h3 style="margin-top:10px">Dongara pick-your-own — price, unit &amp; in stock</h3><div id="invDongara"></div>
     <p><button class="small" onclick="addInvDongara()">+ Add a veggie</button></p>
@@ -122,15 +165,28 @@ pre{white-space:pre-wrap;word-break:break-word;background:#000;border:1px solid 
     <button class="ghost" onclick="resetInventory()">Reset inventory to defaults</button></p>
     <h3 style="margin-top:14px">Gift cards sold</h3><div id="hubGiftList"></div></div>
 <div class="card"><h2>🌾 WA Organic Market Prices — Kev only</h2><p class="small">Western Australian organic market prices, per item — check your Dongara prices against what the Perth organic shops are charging. Kev only, behind the passcode — never shown on any customer page. Market prices change all the time: edit any price here and tap <b>Save market prices</b>. This list is refreshed weekly; the weekly refresh comes after this build.</p><p class="small" id="marketUpdated">Last updated: —</p><div id="marketPriceList"></div><p style="margin-top:10px"><button class="big" onclick="saveMarketPrices()">Save market prices</button></p><h3 style="margin-top:14px">Perth box prices — for reference</h3><div id="marketBoxList"></div><p class="small">Box prices checked 25 Nov 2026 from the suppliers' own online shops. Edit them here too if they change.</p></div>
-    <div class="card"><h2>Messages — from customers (private)</h2>
-    <p class="small">Private — only you see this, behind your Farm Hub passcode. One thread per customer, newest first. Type your reply in the thread and tap <b>Send reply</b> — it stays in that customer's thread and shows to them on this device too. For a reply they will actually see on their phone, also send it on Messenger — tap <b>Copy for Messenger</b> in the thread.</p>
-    <div id="hubMsgList"></div>
-    <p><button class="small" onclick="exportMessages()">Export messages (JSON)</button></p></div>
-    <div class="card"><h2>Unconfirmed — check before changing totals</h2><p class="small">Miranda Wall — two $60 Standard entries 9 Nov, likely duplicate. Toni-Jane Burton — note says she ordered a $100 box and wants to add a $60 box; $100 box missing. Kevin Wenzel — $1.50 produce-only 30 Nov, looks like a test. Kotie van Eck — $60 + $35 on 16 Nov, likely both legitimate.</p>
+<div class="card"><h2>Unconfirmed — check before changing totals</h2><p class="small">Miranda Wall — two $60 Standard entries 9 Nov, likely duplicate. Toni-Jane Burton — note says she ordered a $100 box and wants to add a $60 box; $100 box missing. Kevin Wenzel — $1.50 produce-only 30 Nov, looks like a test. Kotie van Eck — $60 + $35 on 16 Nov, likely both legitimate.</p>
     <button class="ghost" onclick="resetSeed()">Reset orders to the seeded 24</button></div>
-  </div>
-</section>
+</div>
+<div class="hubtab" id="tab-compare">
+<div class="card">
+<h2>⚖️ Box compare — ours vs the Perth shops</h2>
+<p class="small">What our Steele Road Farms Harvest Share boxes are roughly worth against the big Perth organic boxes — what’s in each, and how much cheaper ours are. Their prices are their published box prices, checked 25 Nov 2026. Ours haven’t moved.</p>
+<div id="compareList"></div>
+</div>
 
+</div>
+</div>
+</section>
+<nav>
+<div class="grid">
+<button class="active" onclick="hubTab('home',this)">🏠 Home</button>
+<button onclick="hubTab('orders',this)">📦 Orders</button>
+<button onclick="hubTab('packing',this)">🧺 Packing</button>
+<button onclick="hubTab('farm',this)">🌱 Farm</button>
+<button onclick="hubTab('compare',this)">⚖️ Compare</button>
+</div>
+</nav>
 <script src="qrcode.min.js"></script>
 <script>
 const HUB_PASSCODE='MOON9?';
@@ -312,7 +368,8 @@ function placeOrder(){
  window.scrollTo(0,document.getElementById('orderConfirm').offsetTop);
 }
 function signCSA(){const n=document.getElementById('csaName').value.trim(),sg=document.getElementById('csaSig').value.trim();if(!n||!sg){alert('Please add your name and type it as your signature.');return;}csaForms.push({name:n,addr:document.getElementById('csaAddr').value.trim(),size:document.getElementById('csaSize').value,date:'2026-11-24'});saveCsa();renderHubCsa();document.getElementById('csaDone').innerHTML='<p style="margin-top:10px"><b>CSA signed — thank you, '+n+'.</b> No-obligation, you can pull out at any time. No contract, no guaranteed spot.</p>';}
-function renderHubCsa(){const el=document.getElementById('hubCsaList');if(!el)return;el.innerHTML=csaForms.length?csaForms.map(c=>'<div class="prow"><span><b>'+c.name+'</b></span><span>'+c.size+'<br><span class="small">'+c.date+'</span></span></div>').join(''):'<p class="small">No CSA forms signed yet on this device.</p>';}
+function csaExpireSkips(){let ch=false;csaForms.forEach(c=>{if(c.status==='skipped'&&c.statusRound&&c.statusRound!==weekStart){c.status='active';delete c.statusRound;ch=true;}});if(ch)saveCsa();}
+function renderHubCsa(){const el=document.getElementById('hubCsaList');if(!el)return;csaExpireSkips();el.innerHTML=csaForms.length?csaForms.map(c=>{const st=c.status&&c.status!=='active'?'<br><span class="pill unpaid">'+(c.status==='paused'?'⏸ PAUSED this fortnight':'⏭ SKIPPED this fortnight')+'</span>':'';return '<div class="prow"><span><b>'+c.name+'</b>'+st+'</span><span>'+c.size+'<br><span class="small">'+c.date+'</span></span></div>';}).join(''):'<p class="small">No CSA forms signed yet on this device.</p>';}
 function lookupLoyalty(){const n=document.getElementById('loyName').value.trim();if(!n){document.getElementById('loyOut').innerHTML='<p>Please add a name.</p>';return;}const b=steeleDollars(n);document.getElementById('loyOut').innerHTML='<p style="margin-top:10px">Customer card for <b>'+n+'</b>: '+b.orders+' order(s) on record.<br>Paid so far: <b>$'+b.paidTotal.toFixed(2)+'</b><br>Steele Dollars balance: <b>'+fmtSD(b.dollars)+' Steele $</b> (auto-added: $'+(INV.loyalty.earn||1)+' per $'+(INV.loyalty.per||10)+' paid).</p><p class="small">Referral code: <b>'+customerCodeFor(n)+'</b> \u2014 share it: a friend gets 50% off their first box, you get a free box the same size.'+(owedFreeBoxes(n).length?' You have <b>'+owedFreeBoxes(n).length+' free box(es) owed</b>.':'')+'</p>';}
 function loginCard(){const n=document.getElementById('myCardName').value.trim();const out=document.getElementById('myCardOut');if(!n){out.innerHTML='<p>Please add your name.</p>';return;}renderMyCard(n);}
 function logoutCard(){document.getElementById('myCardOut').innerHTML='';document.getElementById('myCardName').value='';}
@@ -359,7 +416,7 @@ function exportMessages(){const blob=new Blob([JSON.stringify(messages,null,2)],
 function fmtSD(d){return String(Math.round(d*100)/100);}
 function steeleDollarsFor(paid){return Math.floor(paid/(INV.loyalty.per||10)*(INV.loyalty.earn||1)*100)/100;}
 function boxStats(name){const q=name.trim().toLowerCase();const mine=orders.filter(o=>o.name.toLowerCase().includes(q)&&o.box&&o.box!=='Produce only');const boxes=mine.length;return{boxes:boxes,gifts:Math.floor(boxes/10),freeBoxes:Math.floor(boxes/100),toGift:10-(boxes%10),toFree:100-(boxes%100)};}
-const APP_VERSION='2026-11-26-firebase-sync';
+const APP_VERSION='2026-11-27-rebuild';
 function checkForUpdate(){try{fetch(location.href,{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]!==APP_VERSION){const bb=document.getElementById('updateBanner');if(bb)bb.style.display='block';}}).catch(function(){});}catch(e){}}
 (function(){const b=document.createElement('div');b.id='updateBanner';b.style.cssText='display:none;background:#f5b301;color:#000;text-align:center;padding:8px;font-weight:bold;position:sticky;top:0;z-index:99';b.innerHTML='A new version of the app is ready — <a href="#" onclick="location.reload();return false;" style="color:#000;text-decoration:underline">tap here to refresh</a>.';document.body.prepend(b);setInterval(checkForUpdate,15000);})();
 function steeleDollars(name){const q=name.trim().toLowerCase();const mine=orders.filter(o=>o.name.toLowerCase().includes(q));const paidTotal=mine.filter(o=>o.paid==='paid').reduce((a,o)=>a+o.total,0);const dollars=steeleDollarsFor(paidTotal);return{orders:mine.length,paidTotal,dollars};}
@@ -377,7 +434,15 @@ function registerCustomer(){const n=document.getElementById('regName').value.tri
 function switchCustomer(){try{localStorage.removeItem('srf_customer_v1');}catch(e){}const w=document.getElementById('regWall');if(w){w.style.display='block';window.scrollTo(0,0);}}
 function gateCustomerPages(){const wall=document.getElementById('regWall');if(!wall)return;const c=currentCustomer();if(c){wall.style.display='none';prefillCustomer(c);}else{wall.style.display='block';}}
 function getCustomerBook(){const by={};customers.forEach(c=>{const k=(c.name||'').toLowerCase();by[k]={name:c.name,phone:c.phone||'',addr:c.addr||'',pref:c.pref||'',date:c.date||'',code:c.code||'',orders:0,paid:0,boxes:0};});orders.forEach(o=>{const k=(o.name||'').toLowerCase();if(!by[k])by[k]={name:o.name,phone:'',addr:'',pref:o.method||'',date:'',code:(customers.find(x=>(x.name||'').toLowerCase()===k)||{}).code||'',orders:0,paid:0,boxes:0};by[k].orders++;if(o.paid==='paid')by[k].paid+=o.total;if(o.box&&o.box!=='Produce only')by[k].boxes++;});return Object.values(by).map(c=>{c.dollars=steeleDollarsFor(c.paid);return c;}).sort((a,b)=>a.name.localeCompare(b.name));}
-function renderCustomerBook(){const el=document.getElementById('hubCustomerBook');if(!el)return;const book=getCustomerBook();el.innerHTML=book.length?book.map(c=>'<div style="border:1px solid #444;border-radius:8px;padding:8px;margin:8px 0"><b>'+escHtml(c.name)+'</b> \u2014 '+(c.pref||'')+'<br><span class="small">\uD83D\uDCDE '+escHtml(c.phone||'\u2014')+'<br>\uD83C\uDFE0 '+escHtml(c.addr||'\u2014')+'<br>Registered: '+(c.date||'\u2014')+' &bull; '+c.orders+' order(s) &bull; $'+c.paid.toFixed(2)+' paid &bull; <b>'+fmtSD(c.dollars)+' Steele $</b> &bull; '+c.boxes+' box stamp(s) &bull; Referral code: <b>'+escHtml(c.code||'\u2014')+'</b></span></div>').join(''):'<p class="small">No customers registered yet on this device.</p>';}
+var bookLetter=null,bookCustomer=null;
+function bookPickLetter(L){bookLetter=L;bookCustomer=null;renderCustomerBook();}
+function bookPickCustomer(k){bookCustomer=decodeURIComponent(k);renderCustomerBook();}
+function bookBack(){if(bookCustomer){bookCustomer=null;}else{bookLetter=null;}renderCustomerBook();}
+function renderCustomerBook(){const el=document.getElementById('hubCustomerBook');if(!el)return;const book=getCustomerBook();
+if(bookCustomer){const c=book.find(x=>(x.name||'').toLowerCase()===bookCustomer);if(!c){bookCustomer=null;renderCustomerBook();return;}el.innerHTML='<p><button class="small" onclick="bookBack()">\u2190 Back to '+escHtml(bookLetter||'the book')+'</button></p><div style="border:1px solid #444;border-radius:8px;padding:12px"><h3 style="margin:0 0 8px">'+escHtml(c.name)+'</h3><span class="small">\uD83D\uDCDE '+escHtml(c.phone||'\u2014')+'<br>\uD83C\uDFE0 '+escHtml(c.addr||'\u2014')+'<br>'+escHtml(c.pref||'')+'<br>Registered: '+(c.date||'\u2014')+'<br>'+c.orders+' order(s) \u2022 $'+c.paid.toFixed(2)+' paid<br><b>'+fmtSD(c.dollars)+' Steele $</b> \u2022 '+c.boxes+' box stamp(s)<br>Referral code: <b>'+escHtml(c.code||'\u2014')+'</b></span></div>';return;}
+if(bookLetter){const list=book.filter(c=>(c.name||'').charAt(0).toUpperCase()===bookLetter);el.innerHTML='<p><button class="small" onclick="bookBack()">\u2190 All letters</button> <b>'+bookLetter+'</b> \u2014 '+list.length+' customer(s)</p>'+(list.length?list.map(c=>'<p style="margin:6px 0"><button class="small" style="width:100%;text-align:left" onclick="bookPickCustomer(\''+encodeURIComponent((c.name||'').toLowerCase())+'\')">'+escHtml(c.name)+'</button></p>').join(''):'<p class="small">Nobody under '+bookLetter+' yet.</p>');return;}
+const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');const have={};book.forEach(c=>{have[(c.name||'').charAt(0).toUpperCase()]=true;});
+el.innerHTML='<p class="small">Tap a letter, then tap a customer to open their page.</p><div style="display:flex;flex-wrap:wrap;gap:6px">'+letters.map(L=>'<button class="small" style="min-width:38px;padding:10px 0;text-align:center;'+(have[L]?'':'opacity:.35')+'" '+(have[L]?'onclick="bookPickLetter(\''+L+'\')"':'disabled')+'>'+L+'</button>').join('')+'</div><p class="small">'+book.length+' customer(s) in the book.</p>';}
 function hubSeenIds(){try{return JSON.parse(localStorage.getItem('srf_hub_seen_v1')||'[]');}catch(e){return[];}}
 function newOrderIds(){const seen=new Set(hubSeenIds());return orders.concat(waitlist).concat(nextday).filter(o=>!seen.has(o.id)).map(o=>o.id);}
 function renderHubAlert(){const news=newOrderIds();const g=document.getElementById('hubGateAlert');if(g)g.innerHTML=news.length?'<p style="margin-top:10px"><span class="pill unpaid">\uD83D\uDD14 '+news.length+' NEW ORDER'+(news.length>1?'S':'')+'</span> <span class="small">waiting in the Hub \u2014 unlock to see them.</span></p>':'';const b=document.getElementById('hubNewAlert');if(b)b.innerHTML=news.length?'<div class="card" style="border:3px solid var(--gold)"><h2>\uD83D\uDD14 '+news.length+' new order'+(news.length>1?'s':'')+'!</h2><p>'+news.join(', ')+'</p><p><button class="big" onclick="markHubSeen()">Mark all as seen</button></p></div>':'';}
@@ -431,8 +496,10 @@ const DEFAULT_MARKET_BOXES=[
 let marketData=null;
 function loadMarketPrices(){try{const s=localStorage.getItem('srf_market_v1');if(s){marketData=JSON.parse(s);return;}}catch(e){}marketData={items:JSON.parse(JSON.stringify(DEFAULT_MARKET)),boxes:JSON.parse(JSON.stringify(DEFAULT_MARKET_BOXES)),updated:'2026-11-25'};saveMarketPrices(true);}
 function saveMarketPrices(silent){if(!marketData)return;if(!silent){const rows=[...document.querySelectorAll('#marketPriceList .mrow')];marketData.items=rows.map((r,i)=>{const inp=r.querySelectorAll('input');const old=marketData.items[i]||{};return{name:old.name,dong:old.dong,unit:old.unit,srf:old.srf,market:inp[0].value.trim()===''? '':parseFloat(inp[0].value)||'',src:inp[1].value.trim()};});const brows=[...document.querySelectorAll('#marketBoxList .brow')];marketData.boxes=brows.map((r,i)=>{const inp=r.querySelectorAll('input');const old=marketData.boxes[i]||{};return{name:old.name,price:parseFloat(inp[0].value)||old.price};});marketData.updated=new Date().toISOString().slice(0,10);}try{localStorage.setItem('srf_market_v1',JSON.stringify(marketData));}catch(e){}renderMarketPrices();}
-function renderMarketPrices(){const el=document.getElementById('marketPriceList');const up=document.getElementById('marketUpdated');if(up&&marketData)up.textContent='Last updated: '+marketData.updated;if(!el||!marketData)return;el.innerHTML='<div class="prow"><span><b>Item</b></span><span><b>Our price</b></span><span><b>WA market</b></span></div>'+marketData.items.map((m,i)=>{const inv=(INV.dongara||[]).find(p=>(p.name||'').toLowerCase()===(m.dong||m.name).toLowerCase());const srf=inv?inv.price:m.srf;const u=inv?inv.unit:m.unit;return '<div class="prow mrow"><span>'+m.name+' <span class="small">('+u+')</span><br><span class="small">'+(m.src||'no market price yet \u2014 add one')+'</span></span><span>$'+srf+'/'+u+'</span><span>$<input type="number" step="0.01" min="0" value="'+(m.market===''?'':m.market)+'" style="width:70px" placeholder="\u2014"> <input value="'+(m.src||'').replace(/"/g,'&quot;')+'" style="width:110px" placeholder="source"></span></div>';}).join('');const bl=document.getElementById('marketBoxList');if(bl)bl.innerHTML=marketData.boxes.map(b=>'<div class="prow brow"><span>'+b.name+'</span><span>$<input type="number" step="0.01" min="0" value="'+b.price+'" style="width:80px"></span></div>').join('');}
-function refreshHub(){load();loadInv();loadGift();loadArchives();loadMessages();loadKids();loadCsa();loadCustomers();loadReferrals();loadWaitlist();loadCutoff();loadWeekStart();repairEarlyRollover();loadNotified();loadNextDay();loadMarketPrices();loadJokes();loadFeatured();reclassifyOrders();maybeAutoClose();renderHub();renderMessages();msgBadge();renderKidCharacters();renderJoke();renderCutoffBanner();renderShopDates();renderFulfilOptions();renderNextDay();renderMyWaitList();renderBoxes();renderDongara();renderStock();renderWhatsInBox();renderZuc();renderSpecial();renderGiftGrid();calc();renderHubAlert();checkForUpdate();const el=document.getElementById('lastRefreshed');if(el){const s=new Date().toLocaleString('en-AU',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});el.textContent='Last refreshed: '+s;try{localStorage.setItem('srf_last_refresh_v1',s);}catch(e){}}}
+function renderMarketPrices(){const el=document.getElementById('marketPriceList');const up=document.getElementById('marketUpdated');if(up&&marketData)up.textContent='Last updated: '+marketData.updated;if(!el||!marketData)return;el.innerHTML='<div class="prow"><span><b>Item</b></span><span><b>Our price</b></span><span><b>WA market</b></span></div>'+marketData.items.map((m,i)=>{const inv=(INV.dongara||[]).find(p=>(p.name||'').toLowerCase()===(m.dong||m.name).toLowerCase());const srf=inv?inv.price:m.srf;const u=inv?inv.unit:m.unit;return '<div class="prow mrow"><span>'+m.name+' <span class="small">('+u+')</span><br><span class="small">'+(m.src||'no market price yet \u2014 add one')+'</span></span><span>$'+srf+'/'+u+'</span><span>$<input type="number" step="0.01" min="0" value="'+(m.market===''?'':m.market)+'" style="width:70px" placeholder="\u2014"> <input value="'+(m.src||'').replace(/"/g,'&quot;')+'" style="width:110px" placeholder="source"></span></div>';}).join('');const bl=document.getElementById('marketBoxList');if(bl)bl.innerHTML=marketData.boxes.map(b=>'<div class="prow brow"><span>'+b.name+'</span><span>$<input type="number" step="0.01" min="0" value="'+b.price+'" style="width:80px"></span></div>').join('');renderCompare();}
+function refreshHubLocal(){load();loadInv();loadGift();loadArchives();loadMessages();loadKids();loadCsa();loadCustomers();loadReferrals();loadWaitlist();loadCutoff();loadWeekStart();repairEarlyRollover();loadNotified();loadNextDay();loadMarketPrices();loadJokes();loadFeatured();reclassifyOrders();maybeAutoClose();renderHub();renderMessages();msgBadge();renderKidCharacters();renderJoke();renderCutoffBanner();renderShopDates();renderFulfilOptions();renderNextDay();renderMyWaitList();renderBoxes();renderDongara();renderStock();renderWhatsInBox();renderZuc();renderSpecial();renderGiftGrid();calc();renderHubAlert();checkForUpdate();const el=document.getElementById('lastRefreshed');if(el){const s=new Date().toLocaleString('en-AU',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});el.textContent='Last refreshed: '+s;try{localStorage.setItem('srf_last_refresh_v1',s);}catch(e){}}}
+function refreshHub(){var b=document.getElementById('refreshBtn');if(b)b.textContent='🔄 Refreshing…';var done=function(){refreshHubLocal();if(b)b.textContent='🔄 Refresh';};if(window.SRF_SYNC&&SRF_SYNC.pullNow){try{SRF_SYNC.pullNow(done);}catch(e){done();}}else{done();}}
+
 function renderHub(){
  if(!document.getElementById('hubTotals'))return;
  renderInvEditor();renderHubGiftList();renderWaitList();renderNextDay();renderOldOrders();renderRoundInfo();renderNotifyList();renderArchives();renderHubMessages();renderHubKids();renderHubCsa();renderHubLoyalty();renderHubCustomers();renderHubJokes();renderCustomerBook();renderHubAlert();renderReferrals();renderMarketPrices();const _lr=document.getElementById('lastRefreshed');if(_lr){try{const _s=localStorage.getItem('srf_last_refresh_v1');if(_s)_lr.textContent='Last refreshed: '+_s;}catch(e){}}
@@ -442,12 +509,96 @@ function renderHub(){
  document.getElementById('hubRows').innerHTML=rows.map(o=>'<tr><td>'+o.id+(newOrderIds().includes(o.id)?' <span class="pill unpaid">NEW</span>':'')+'<br><span class="small">'+o.date+'</span></td><td>'+o.name+(o.notes?'<br><span class="flag">'+o.notes+'</span>':'')+'</td><td>'+o.box+'<br><span class="small">'+o.method+'</span></td><td>'+money(o.total)+'</td><td><span class="pill '+o.paid+'">'+o.paid.toUpperCase()+'</span><br><span class="small">'+o.pay+'</span></td><td>'+(o.paid==='unpaid'?'<button class="small" onclick="markPaid(\''+o.id+'\')">Mark paid</button>':'')+'</td></tr>').join('');
  const ger=currentWeekOrders().filter(o=>o.method==='delivery'),farm=currentWeekOrders().filter(o=>o.method==='pickup');
  const pack=(list,title)=>'<h3>'+title+' ('+list.length+')</h3>'+list.map((o,i)=>'<div class="prow"><span>Box '+(i+1)+' — '+o.id+' — '+o.name+'</span><span>'+o.box+' — '+money(o.total)+' — '+o.paid+'</span></div>').join('');
- document.getElementById('packList').innerHTML=pack(ger,'Geraldton — '+shortDate(deliveryDate(0))+', BCF 4:30–5:30pm')+pack(farm,'Farm pickup — '+shortDate(pickupDate(0))+', morning');const pt=document.getElementById('packListTitle');if(pt)pt.textContent='Pack list — '+shortDate(deliveryDate(0))+' Geraldton / '+shortDate(pickupDate(0))+' farm';
+ document.getElementById('packList').innerHTML=pack(ger,'Geraldton — '+shortDate(deliveryDate(0))+', BCF 4:30–5:30pm')+pack(farm,'Farm pickup — '+shortDate(pickupDate(0))+', morning');const pt=document.getElementById('packListTitle');if(pt)pt.textContent='Pack list — '+shortDate(deliveryDate(0))+' Geraldton / '+shortDate(pickupDate(0))+' farm';const po=document.getElementById('packListOrders');if(po)po.innerHTML=document.getElementById('packList').innerHTML;const pto=document.getElementById('packListTitleOrders');if(pto)pto.textContent=document.getElementById('packListTitle').textContent;renderHubHome();renderCompare();
 }
 function markPaid(id){const o=orders.find(x=>x.id===id);if(o){o.paid='paid';save();renderHub();}}
 function exportOrders(){const blob=new Blob([JSON.stringify(orders,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.json';a.click();}
 function exportCSV(){const csv='id,name,date,method,box,total,pay,paid,notes\n'+orders.map(o=>[o.id,'"'+o.name+'"',o.date,o.method,'"'+o.box+'"',o.total,o.pay,o.paid,'"'+(o.notes||'')+'"'].join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='steele-road-farms-orders.csv';a.click();}
 function resetSeed(){if(!confirm('Reset all orders back to the seeded 24? New shop orders and the wait list will be lost.'))return;localStorage.removeItem('srf_orders_v1');localStorage.removeItem('srf_waitlist_v1');localStorage.removeItem('srf_referrals_v1');referrals=[];localStorage.removeItem('srf_cutoff_v1');localStorage.removeItem('srf_weekstart_v1');localStorage.removeItem('srf_notified_v1');localStorage.removeItem('srf_nextday_v1');waitlist=[];nextday=[];weekCutoff=CUTOFF_DEFAULT;weekStart=WEEK_START_DEFAULT;notified={};load();loadWaitlist();loadCutoff();loadWeekStart();loadNotified();loadNextDay();reclassifyOrders();renderHub();renderWaitList();renderCutoffBanner();renderRoundInfo();renderNotifyList();renderOldOrders();renderNextDay();renderShopDates();renderFulfilOptions();}
+
+/* ---- Hub tabs: Home / Orders / Packing / Farm / Compare ---- */
+function hubTab(t,btn){document.querySelectorAll('.hubtab').forEach(function(x){x.classList.remove('active');});var el=document.getElementById('tab-'+t);if(el)el.classList.add('active');document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');window.scrollTo(0,0);}
+
+/* ---- Home tab: live numbers, never hard-coded ---- */
+function renderHubHome(){
+  var o=document.getElementById('statOrders');if(!o)return;
+  var cw=currentWeekOrders();
+  var boxes=cw.filter(function(x){return x.box&&x.box!=='Produce only';});
+  o.textContent=boxes.length+' / 15';
+  document.getElementById('statOrdersSub').textContent=Math.max(0,15-boxes.length)+' spots left this fortnight';
+  var tot=cw.reduce(function(a,x){return a+x.total;},0);
+  var ger=cw.filter(function(x){return x.method==='delivery';}).length;
+  var farm=cw.filter(function(x){return x.method==='pickup';}).length;
+  document.getElementById('statSales').textContent=money(tot);
+  document.getElementById('statSalesSub').textContent=ger+' Geraldton delivery \u00B7 '+farm+' farm pickup';
+  var stock=(typeof INV!=='undefined'&&INV.stock)?INV.stock.length:0;
+  document.getElementById('statHarvest').textContent=stock+' lines';
+  document.getElementById('statHarvestSub').textContent='stock on hand \u2014 Eden Bed 1: artichoke + silverbeet';
+  document.getElementById('statWait').textContent=String(waitlist.length);
+  document.getElementById('statWaitSub').textContent=waitlist.length?('Next in line: '+waitlist[0].name):'No one waiting';
+  hubDateChanged();
+}
+function hubDateChanged(){
+  var el=document.getElementById('hubDatePicker');var info=document.getElementById('hubDateInfo');
+  if(!el||!info)return;
+  var picked=el.value;if(!picked)return;
+  var best=0,bestDiff=1e15;
+  for(var r=-8;r<=8;r++){
+    var d=deliveryDate(r);
+    var diff=Math.abs(new Date(d+'T12:00:00')-new Date(picked+'T12:00:00'));
+    if(diff<bestDiff){bestDiff=diff;best=r;}
+  }
+  var close=addDays(weekCutoff,14*best);
+  info.innerHTML='Round: orders close <b>'+cutoffLabel(close)+'</b> at midnight. Delivery <b>'+shortDateY(deliveryDate(best))+'</b> Geraldton BCF 4:30\u20135:30pm, farm pickup <b>'+shortDateY(pickupDate(best))+'</b> morning.'+(best!==0?'<br><span class="small">That is not this round \u2014 the numbers on this page are always this round\u2019s live numbers.</span>':'');
+}
+
+/* ---- Compare tab: ours vs the Perth shops (published prices, checked 25 Nov 2026) ---- */
+var COMPARE_DATA=[
+ {size:'Small',rows:[
+   {name:'The Organic Collective \u2014 Small',price:49,main:true,what:'7\u20138 veg varieties + 2 fruit varieties, certified organic'},
+   {name:'Perth Organics \u2014 Basics Box, Small',price:49,main:true,what:'500g\u20131kg each of pumpkin, potatoes, onions, carrots, beetroot + 4\u20135 seasonal greens'},
+   {name:'Dunn & Walton \u2014 Seasonal Fruit & Veg, Small',price:55,main:true,what:'Certified organic fruit & veg staples, store-selected'},
+   {name:'Dirty Clean Food \u2014 Certified Organic Produce Box, Small',price:67.95,main:true,what:'Fruit & veg for 2\u20133 people, from Maus Organics, Serpentine. Cannot be customised.'}]},
+ {size:'Standard',rows:[
+   {name:'The Organic Collective \u2014 Large Staples',price:64,main:true,what:'7\u20138 veg varieties + 2\u20133 fruit varieties, certified organic'},
+   {name:'Dunn & Walton \u2014 The Basics Box',price:65,main:true,what:'Certified organic staples + 1L milk, \u00BD dozen eggs, 500g rice'},
+   {name:'Dunn & Walton \u2014 Seasonal Fruit & Veg, Medium',price:75,main:true,what:'Certified organic fruit & veg staples, store-selected'},
+   {name:'Perth Organics \u2014 Mixed Fruit & Veg, Medium',price:79,main:true,what:'Certified organic seasonal mixed box'}]},
+ {size:'Large',rows:[
+   {name:'The Organic Collective \u2014 Large Staples',price:64,main:true,what:'7\u20138 veg varieties + 2\u20133 fruit varieties, certified organic (also listed under Standard \u2014 the Collective\u2019s naming, not ours)'},
+   {name:'Perth Organics \u2014 Basics Box, Large',price:89,main:true,what:'500g\u20131.5kg of each root veg + 6\u20138 seasonal greens, for 3\u20134 people'},
+   {name:'Dirty Clean Food \u2014 Certified Organic Produce Box, Large',price:94.95,main:true,what:'Fruit & veg for 4\u20136 people. Cannot be customised.'},
+   {name:'Dunn & Walton \u2014 Seasonal Veg Box, Large',price:95,main:true,what:'Veg-only certified organic box, store-selected'},
+   {name:'The Organic Collective \u2014 The Organic Box with the Lot',price:139,main:false,what:'Large Staples plus three $15 add-on bundles \u2014 flagship box, left out of the average below'},
+   {name:'Dunn & Walton \u2014 Seasonal Fruit & Veg, Extra Large',price:150,main:false,what:'Their biggest seasonal mixed box \u2014 flagship box, left out of the average below'}]}
+];
+function renderCompare(){
+  var el=document.getElementById('compareList');if(!el)return;
+  var crops=(typeof INV!=='undefined'&&INV.stock)?INV.stock:[];
+  var html='';
+  COMPARE_DATA.forEach(function(g){
+    var mains=g.rows.filter(function(r){return r.main;});
+    var avg=mains.reduce(function(a,r){return a+r.price;},0)/mains.length;
+    var theirFortnight=+(avg*2).toFixed(2);
+    var oursDel=g.size==='Small'?35:(g.size==='Standard'?60:105);
+    var oursPick=g.size==='Small'?30:(g.size==='Standard'?55:100);
+    var save=+(theirFortnight-oursDel).toFixed(2);
+    html+='<h3 style="margin-top:14px">'+g.size+' boxes</h3>';
+    html+='<div class="prow"><span><b>Steele Road Farms Harvest Share \u2014 '+g.size+'</b><br><span class="small">Veg only, from our current crop list ('+crops.length+' lines). Fortnightly.</span></span><span><b class="price">$'+oursPick+' pickup<br>$'+oursDel+' delivered</b></span></div>';
+    g.rows.forEach(function(r){
+      html+='<div class="prow"><span>'+r.name+'<br><span class="small">'+r.what+'</span></span><span>$'+r.price.toFixed(2)+' / week</span></div>';
+    });
+    html+='<p style="margin:8px 0"><b>Per fortnight:</b> ours <b class="price">$'+oursDel.toFixed(2)+'</b> delivered, Perth average <b>$'+theirFortnight.toFixed(2)+'</b> (weekly box \u00D7 2, main boxes only). <b>You keep $'+save.toFixed(2)+' every fortnight</b> \u2014 $'+Math.round(save*26)+' a year.</p>';
+  });
+  html+='<h3 style="margin-top:14px">The extras they charge</h3><p class="small">The Organic Collective: $4.95 pickup packing fee, delivery fees that vary by suburb, plus $15 for every \u201CBuild Your Box\u201D bundle. Dunn &amp; Walton: delivery $4.99\u2013$14.99 with minimum orders of $50\u2013$125. Perth Organics: $11.95 flat Perth metro delivery. With us it\u2019s the box price, full stop \u2014 $5 less if you pick up from the farm.</p>';
+  html+='<h3 style="margin-top:14px">What\u2019s in our box</h3><p class="small">'+(crops.length?crops.join(', '):'See the stock list on the Farm tab.')+' \u2014 packed with what\u2019s ripe that week off the Eden field beds. Their boxes are retail boxes packed from many growers; ours comes off one field at Bonniefield.</p>';
+  if(typeof marketData!=='undefined'&&marketData&&marketData.boxes){
+    html+='<h3 style="margin-top:14px">Perth box prices on file in the Hub</h3>'+marketData.boxes.map(function(b){return '<div class="prow"><span>'+b.name+'</span><span>$'+b.price+'</span></div>';}).join('')+'<p class="small">Checked 25 Nov 2026 from the suppliers\u2019 own online shops. Edit them on the Farm tab if they change.</p>';
+  }
+  html+='<p class="small" style="margin-top:10px">Published box prices, checked 25 Nov 2026 \u2014 The Big Box-Off comparison. Perth averages are the mean of the main boxes listed, charged twice (weekly \u00D7 2), before their delivery fees. We do not have a published ingredient list for every Perth box, so where one is not listed above we say so rather than guess.</p>';
+  el.innerHTML=html;
+}
+
 load();loadInv();loadGift();loadArchives();loadMessages();loadKids();loadCsa();loadCustomers();loadReferrals();ensureCustomerCodes();loadFeatured();loadWaitlist();loadCutoff();loadWeekStart();repairEarlyRollover();loadNotified();loadNextDay();loadMarketPrices();reclassifyOrders();maybeAutoClose();renderMessages();msgBadge();renderKidCharacters();loadJokes();renderJoke();gateCustomerPages();renderHubAlert();renderCutoffBanner();renderShopDates();renderFulfilOptions();renderNextDay();renderMyWaitList();
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.textContent='Install app';});
