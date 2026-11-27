@@ -340,6 +340,12 @@ if (typeof calc === 'function') {
    One order per box (so the Hub's 15-box cap counts right); extras,
    discounts and gift-card purchases ride on the first order. */
 function placeCartOrder() {
+  if (typeof currentCustomer === 'function' && !currentCustomer()) {
+    var _w = document.getElementById('regWall');
+    if (_w) _w.style.display = 'block';
+    alert('Please register first — it only takes a minute.');
+    return;
+  }
   maybeAutoClose();
   var nameEl = document.getElementById('custName');
   var name = nameEl ? nameEl.value.trim() : '';

@@ -1,5 +1,5 @@
-/* Steele Road Farms — offline cache. v14 — shop redesign + Hub tabs (cream cards, reviews, Harvest Share pause/skip, Compare) */
-const CACHE = 'srf-v14';
+/* Steele Road Farms — offline cache. v15 — front-door registration gate + real registration dates */
+const CACHE = 'srf-v15';
 const FILES = ['./', 'index.html', 'shop.html', 'loyalty.html', 'kids.html', 'hub.html', 'sync.js', 'cart.js', 'manifest.webmanifest', 'manifest-hub.json', 'icon.svg', 'hub-icon.svg', 'qrcode.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
