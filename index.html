@@ -97,7 +97,7 @@ function loadJokes(){try{const s=localStorage.getItem('srf_jokes_v1');if(s){joke
 function saveJokes(){try{localStorage.setItem('srf_jokes_v1',JSON.stringify(jokes));}catch(e){}}
 function dailyJoke(){const ok=jokes.filter(j=>j.approved);if(!ok.length)return 'No jokes approved yet — Farmer Kev is writing one!';const day=Math.floor(Date.now()/86400000);return ok[day%ok.length].text;}
 function renderJoke(){const el=document.getElementById('jokeText');if(el)el.textContent=dailyJoke();}
-const APP_VERSION='2026-11-28-checkout-reg';
+const APP_VERSION='2026-11-28-syncfix';
 (function(){const b=document.createElement('div');b.id='updateBanner';b.style.cssText='display:none;background:#f5b301;color:#000;text-align:center;padding:8px;font-weight:bold;position:sticky;top:0;z-index:99';b.innerHTML='A new version of the app is ready — <a href="#" onclick="location.reload();return false;" style="color:#000;text-decoration:underline">tap here to refresh</a>.';document.body.prepend(b);setInterval(function(){try{fetch(location.href,{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]!==APP_VERSION){const bb=document.getElementById('updateBanner');if(bb)bb.style.display='block';}}).catch(function(){});}catch(e){}},15000);})();
 /* ---- Customer registration (checkout only — no front-door gate) ---- */
 var customers=[];

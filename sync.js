@@ -3,7 +3,14 @@
    local change is pushed to Firestore, and listens for changes from other
    devices. localStorage stays the fallback: if Firestore is unreachable
    (no database yet, no network, rules blocking), the app keeps working
-   locally and syncs later. Nothing here deletes local data. */
+   locally and syncs later. Nothing here deletes local data.
+   FIX 2026-11-28 (orders wiped 27 Nov): pushNow() used to blind-overwrite
+   the whole shared doc with whatever was in this device's localStorage,
+   including null for keys the device never wrote (e.g. a fresh phone that
+   registered on the front door never loads orders, so its first save pushed
+   orders:null and wiped the shared orders). Now every push MERGES with the
+   shared store first: a missing local value never overwrites a real shared
+   value, and no push happens before the first pull has completed. */
 (function () {
   'use strict';
 
@@ -82,6 +89,11 @@
 
   var db = null, docRef = null, unsub = null, settled = false;
   var applying = false, pushTimer = null, syncState = 'off', syncNote = '';
+  /* Set once the first read of the shared store has completed (or the live
+     listener has delivered). Until then no push may go out: a save made in
+     the first seconds on a fresh device must not overwrite the shared store
+     with a half-empty local snapshot. */
+  var ready = false, pendingPush = false, lastRemote = null;
 
   function callFn(name) {
     try {
@@ -127,29 +139,95 @@
     return { v: 1, updatedAt: Date.now(), updatedBy: deviceId, data: data };
   }
 
-  /* True when this device only holds the seeded defaults (fresh install). */
-  function localIsSeedOnly() {
-    try {
-      var o = localStorage.getItem(KEYS.orders);
-      if (!o) return true;
-      var arr = JSON.parse(o);
-      if (typeof SEED === 'undefined' || !SEED) return false;
-      if (!arr || arr.length !== SEED.length) return false;
-      for (var i = 0; i < arr.length; i++) {
-        if (arr[i].id !== SEED[i][0] || arr[i].total !== SEED[i][5]) return false;
-      }
-      var others = [KEYS.customers, KEYS.giftcards, KEYS.messages, KEYS.kids,
-        KEYS.csa, KEYS.referrals, KEYS.archives, KEYS.waitlist];
-      for (var j = 0; j < others.length; j++) {
-        var v = localStorage.getItem(others[j]);
-        if (v && v !== '[]' && v !== '{}' && v !== 'null') return false;
-      }
-      return true;
-    } catch (e) { return false; }
-  }
-
   function renderAll() {
     for (var i = 0; i < RENDER_FNS.length; i++) callFn(RENDER_FNS[i]);
+  }
+
+  /* Keys whose items are append-only records: a push unions them by identity
+     (new records from either side survive; on a clash the local copy wins).
+     orders / waitlist are NOT in here on purpose: orders move between the
+     live list, the waitlist and the archives, so a union would resurrect
+     moved orders. For those, the local list wins whole (see mergeData). */
+  var UNION_KEYS = ['customers', 'giftcards', 'archives', 'messages',
+    'kids', 'csa', 'referrals'];
+  var RECORD_KEYS = UNION_KEYS.concat(['orders']);
+
+  function parseArr(str) {
+    try {
+      var v = JSON.parse(str);
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  }
+
+  function itemKey(k, it) {
+    if (!it || typeof it !== 'object') return JSON.stringify(it);
+    if (k === 'customers') return (it.code || ('name:' + (it.name || '').toLowerCase()));
+    if (k === 'giftcards') return it.code || JSON.stringify(it);
+    if (k === 'kids') return 'kid:' + (it.name || '') + '|' + (it.parent || '');
+    if (k === 'csa') return JSON.stringify(it);
+    return it.id || JSON.stringify(it);
+  }
+
+  /* Union two JSON-array strings by identity; local wins on a clash. */
+  function unionKey(k, localStr, remoteStr) {
+    var l = parseArr(localStr), r = parseArr(remoteStr);
+    if (!l.length) return remoteStr;
+    if (!r.length) return localStr;
+    var seen = {}, out = r.slice();
+    r.forEach(function (it) { seen[itemKey(k, it)] = 1; });
+    l.forEach(function (it) {
+      var key = itemKey(k, it);
+      if (seen[key]) {
+        for (var i = 0; i < out.length; i++) {
+          if (itemKey(k, out[i]) === key) { out[i] = it; break; }
+        }
+      } else { out.push(it); seen[key] = 1; }
+    });
+    return JSON.stringify(out);
+  }
+
+  /* Merge a local snapshot with the shared store's snapshot, key by key.
+     The golden rule: a missing local value (null) NEVER overwrites a real
+     shared value. That is what wiped the orders on 27 Nov 2026. */
+  function mergeData(local, remote) {
+    var out = {};
+    for (var k in KEYS) {
+      var lv = local ? local[k] : null;
+      var rv = remote ? remote[k] : null;
+      if (lv == null) out[k] = rv;
+      else if (rv == null) out[k] = lv;
+      else if (UNION_KEYS.indexOf(k) >= 0) out[k] = unionKey(k, lv, rv);
+      else out[k] = lv; /* orders, waitlist, scalars: local list wins whole */
+    }
+    return out;
+  }
+
+  /* Local records that the shared store does not have anywhere yet (a new
+     order placed on this phone, a new registration). For orders, "anywhere"
+     means the live list, the waitlist AND the past-orders archives, so a
+     seeded order that already lives in the shared archives is never treated
+     as new and never dragged back into the live list. */
+  function findAdditions(k, localStr, remoteData) {
+    var l = parseArr(localStr);
+    if (!l.length) return [];
+    if (k === 'orders') {
+      var present = {};
+      parseArr(remoteData.orders || null).forEach(function (it) { if (it && it.id) present[it.id] = 1; });
+      parseArr(remoteData.waitlist || null).forEach(function (it) { if (it && it.id) present[it.id] = 1; });
+      parseArr(remoteData.archives || null).forEach(function (a) {
+        (a.orders || []).forEach(function (it) { if (it && it.id) present[it.id] = 1; });
+      });
+      return l.filter(function (it) { return it && it.id && !present[it.id]; });
+    }
+    var seen = {};
+    parseArr(remoteData[k] || null).forEach(function (it) { seen[itemKey(k, it)] = 1; });
+    return l.filter(function (it) { return it && !seen[itemKey(k, it)]; });
+  }
+
+  function setReady() {
+    if (ready) return;
+    ready = true;
+    if (pendingPush) { pendingPush = false; pushNow(); }
   }
 
   function applySnapshot(snap) {
@@ -163,11 +241,24 @@
           localStorage.setItem(BACKUP_KEY, JSON.stringify(bak));
         }
       } catch (e) {}
+      var preLocal = collectSnapshot().data;
+      var remoteData = snap.data || {};
       for (var k in KEYS) {
-        var v = snap.data ? snap.data[k] : null;
+        var v = remoteData[k];
         try {
-          if (v == null) localStorage.removeItem(KEYS[k]);
-          else localStorage.setItem(KEYS[k], v);
+          if (v == null) {
+            /* Shared store has nothing for this key — keep what's on this
+               device. A missing value means "no information", never
+               "delete the local data". */
+          } else if (RECORD_KEYS.indexOf(k) >= 0) {
+            /* Keep genuinely-new local records (e.g. an order placed on
+               this phone) that the shared store doesn't have anywhere yet. */
+            var additions = findAdditions(k, preLocal[k], remoteData);
+            var base = parseArr(v);
+            localStorage.setItem(KEYS[k], JSON.stringify(base.concat(additions)));
+          } else {
+            localStorage.setItem(KEYS[k], v);
+          }
         } catch (e) {}
       }
       for (var i = 0; i < LOAD_FNS.length; i++) callFn(LOAD_FNS[i]);
@@ -199,14 +290,28 @@
 
   function pushNow() {
     if (!db || !docRef || applying) return Promise.resolve(false);
-    var snap = collectSnapshot();
+    if (!ready) { pendingPush = true; return Promise.resolve(false); }
+    var local = collectSnapshot();
     setStatus('syncing');
-    return docRef.set(snap).then(function () {
-      meta.updatedAt = snap.updatedAt;
-      meta.lastSyncAt = snap.updatedAt;
-      saveMeta();
-      setStatus('synced');
-      return true;
+    return docRef.get().then(function (doc) {
+      var remote = null;
+      if (doc.exists) {
+        var d = doc.data();
+        if (d) {
+          lastRemote = d;
+          if (d.data) remote = d.data;
+        }
+      }
+      /* Merge with the shared store first — never blind-overwrite it. */
+      var snap = { v: 1, updatedAt: Date.now(), updatedBy: deviceId,
+        data: mergeData(local.data, remote) };
+      return docRef.set(snap).then(function () {
+        meta.updatedAt = snap.updatedAt;
+        meta.lastSyncAt = snap.updatedAt;
+        saveMeta();
+        setStatus('synced');
+        return true;
+      });
     }).catch(function (err) {
       handleSyncError(err);
       return false;
@@ -227,6 +332,8 @@
         if (!doc.exists) return;
         var remote = doc.data();
         if (!remote || !remote.data) return;
+        lastRemote = remote;
+        setReady();
         if (remote.updatedBy === deviceId) return;
         if ((remote.updatedAt || 0) > (meta.lastSyncAt || 0)) {
           applySnapshot(remote);
@@ -242,22 +349,37 @@
       if (!doc.exists) {
         /* Nothing shared yet — this device seeds the shared store
            (the 24 seeded orders and everything else on it). */
+        setReady();
         return pushNow().then(function () { subscribe(); });
       }
       var remote = doc.data();
-      if (!remote || !remote.data) return pushNow().then(function () { subscribe(); });
+      if (!remote || !remote.data) {
+        setReady();
+        return pushNow().then(function () { subscribe(); });
+      }
+      lastRemote = remote;
       if (remote.updatedBy === deviceId) {
         meta.lastSyncAt = remote.updatedAt || Date.now();
         saveMeta();
-      } else if (!meta.lastSyncAt && !localIsSeedOnly()) {
-        /* This device already holds real local data and has never synced:
-           its data wins the first time, so nothing on it is lost. */
-        return pushNow().then(function () { subscribe(); });
-      } else if ((remote.updatedAt || 0) > (meta.lastSyncAt || 0)) {
+        setReady();
+      } else if ((remote.updatedAt || 0) > (meta.lastSyncAt || 0) || !meta.lastSyncAt) {
+        /* Shared store is newer than anything on this device — or this
+           device has never synced: pull it FIRST. applySnapshot keeps any
+           genuinely-new local records, then push the merged result up so
+           nothing this device created is lost. A fresh device's seeded
+           orders never overwrite the shared live orders this way. */
         applySnapshot(remote);
+        setReady();
+        subscribe();
+        setStatus('synced');
+        return pushNow();
       } else if ((meta.updatedAt || 0) > (remote.updatedAt || 0)) {
+        /* This device changed things after its last sync: push the
+           merged result (pushNow merges with the shared store first). */
+        setReady();
         return pushNow().then(function () { subscribe(); });
       }
+      setReady();
       subscribe();
       setStatus('synced');
     }).catch(function (err) { handleSyncError(err); });
@@ -316,6 +438,7 @@
     docRef.get().then(function (doc) {
       if (doc.exists) {
         var remote = doc.data();
+        if (remote) lastRemote = remote;
         if (remote && remote.data && (remote.updatedAt || 0) > (meta.lastSyncAt || 0) &&
             remote.updatedBy !== deviceId) {
           applySnapshot(remote);
@@ -332,7 +455,11 @@
     status: function () { return { state: syncState, note: syncNote, deviceId: deviceId, meta: meta }; },
     pushNow: pushNow,
     pullNow: pullNow,
-    config: FIREBASE_CONFIG
+    config: FIREBASE_CONFIG,
+    /* Test hooks (not used by the app itself). */
+    _mergeData: mergeData,
+    _findAdditions: findAdditions,
+    _isReady: function () { return ready; }
   };
 
   if (document.readyState === 'loading') {

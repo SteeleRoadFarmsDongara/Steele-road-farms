@@ -1,5 +1,5 @@
 /* Steele Road Farms — offline cache. v16 — registration at checkout only */
-const CACHE = 'srf-v16';
+const CACHE = 'srf-v17';
 const FILES = ['./', 'index.html', 'shop.html', 'loyalty.html', 'kids.html', 'hub.html', 'sync.js', 'cart.js', 'manifest.webmanifest', 'manifest-hub.json', 'icon.svg', 'hub-icon.svg', 'qrcode.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
