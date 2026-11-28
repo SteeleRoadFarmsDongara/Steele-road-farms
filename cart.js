@@ -1,3 +1,4 @@
+if (typeof nextOrderId !== 'function') { var nextOrderId = function(){let n=0;const scan=function(l){(l||[]).forEach(function(o){const m=/^SRF-(\d+)$/.exec(o.id||'');if(m)n=Math.max(n,parseInt(m[1],10));});};scan(orders);scan(waitlist);(typeof archives!=='undefined'?archives:[]).forEach(function(a){scan(a.orders);});return 'SRF-'+String(n+1).padStart(3,'0');}; }
 /* Steele Road Farms — Shop cart + Stripe-ready checkout.
    Loaded on shop.html AFTER the main inline app script and BEFORE sync.js,
    so sync.js can wrap saveCart() and sync the cart with the shared store.
@@ -407,7 +408,7 @@ function placeCartOrder() {
   var placed = [], waitlisted = [];
   var firstOrderId = null;
   plans.forEach(function (op) {
-    var id = 'SRF-' + String(orders.length + waitlist.length + 1).padStart(3, '0');
+    var id = nextOrderId();
     var sub = op.boxPrice + (op.first ? extrasSub : 0);
     var gd = Math.min(giftLeft, sub); giftLeft -= gd;
     var rd = 0, fd = 0;
@@ -462,7 +463,7 @@ function placeCartOrder() {
     document.getElementById('giftOut').innerHTML = '';
   }
   upsertCustomer({ name: name, phone: document.getElementById('custPhone').value.trim(),
-    addr: document.getElementById('custAddr').value.trim(), pref: f, date: '2026-11-25' });
+    addr: document.getElementById('custAddr').value.trim(), pref: f, date: todayStr() });
   renderHub(); renderWaitList(); renderCutoffBanner();
 
   /* Reset referral / free-box state, as the old flow does. */
